@@ -430,3 +430,5 @@ knitr::include_graphics("pngs/full_join_byCD_eqn.png")
 **`left_join()`, `right_join()`, `inner_join()` にも `by` 引数があります。**
 
 ---
+
+
