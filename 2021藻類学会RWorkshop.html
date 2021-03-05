@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Rを用いた藻類データの 解析セミナー</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Gregory N. Nishihara" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="greg.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Rを用いた藻類データの<br/>解析セミナー
+## 中級コース
+### Gregory N. Nishihara
+### Nagasaki University
+### 2021/03/15 (updated: 2021-03-05)
+
+---
+
+
+
+
+
+
+
+
+# Workshop について
+
+
+**スケジュール**
+
+* 13:00 -- 14:30　効率的なデータ処理 (tidyverse の紹介)
+* 14:30 -- 14:45　休憩・質疑応答
+* 14:45 -- 16:15　論文投稿用の作図方法 (ggplot2 の紹介)
+* 16:15 -- 17:00　質疑応答
+
+
+**tidyverse**, **ggpubr**, **lemon**のパッケージをインストールしてください。
+
+
+```r
+install.packages(c("tidyverse", "ggpubr", "lemon"))
+```
+
+**tidyverse** は、**ggplot2**, **dplyr**, **tidyr**, **readr**, **purrr**, **tibble**, **stringr**, **forcats**の８つのパッケージをまとめたパッケージです。
+
+**ggpubr** と **lemon** は **ggplot2** の補助パッケージです。
+
+---
+
+## `tidyverse` とは
+
+* [開発者：Hadley Wickham (@hadleywickham; RStudio Chief Scientist)](http://hadley.nz/)
+* [useR2016](https://twitter.com/hadleywickham/status/959507805282582528) ではじめて紹介されました。
+* コアパッケージ以外の `tidyverse` パッケージは `tidyverse_packages()` で確認できます。
+
+.centerfig[
+[
+&lt;img src="web_images/tidyverse_link.png" width="70%" style="display: block; margin: auto;" /&gt;
+](https://tidyverse.org)
+]
+
+---
+
+## パイプ (pipe) とは
+
+.pull-left[
+
+* `tidyverse` といえば、パイプ
+* ` %&gt;% `
+* RStudio では **`SHIFT+CTRL+M`** で入力できます。
+* Linux ユーサーになじみのある演算子 (operator)
+]
+
+.pull-right[
+
+
+```r
+# Example 1
+z = f(x) # ベース R
+z = x %&gt;% f(.) # tidyverse
+
+# Example 2
+z = f(g(x)) # ベース R
+z = x %&gt;% f() %&gt;% g() # tidyverse
+
+# Example 3
+z = f(x, y) # ベース R
+z = x %&gt;% f(y)# tidyverse
+```
+
+]
+
+-------------------
+
+* `%&gt;%` の左辺 `x` を右辺 `f()` に渡すために使います。
+* 特別に指定しなければ、左辺 `x` は `f()` の第 1 引数に渡されます。
+
+
+---
+
+## `tibble` は機能的なデータフレーム
+
+
+```r
+iris # base R data frame
+```
+
+
+```r
+head(iris)
+```
+
+```
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+## 1          5.1         3.5          1.4         0.2  setosa
+## 2          4.9         3.0          1.4         0.2  setosa
+## 3          4.7         3.2          1.3         0.2  setosa
+## 4          4.6         3.1          1.5         0.2  setosa
+## 5          5.0         3.6          1.4         0.2  setosa
+## 6          5.4         3.9          1.7         0.4  setosa
+```
+
+データフレーべム (data frame) は変数&lt;sup&gt;1&lt;/sup&gt; (variable) と観測値&lt;sup&gt;2&lt;/sup&gt; (observation) を正方形の表にまとめたオブジェクト (object) です。
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt;変数は列; &lt;sup&gt;2&lt;/sup&gt;観測値は行
+]
+
+---
+
+## `tibble` は機能的なデータフレーム
+
+
+```r
+as_tibble(iris) # tidyverse tibble
+```
+
+```
+## # A tibble: 150 x 5
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
+##  1          5.1         3.5          1.4         0.2 setosa 
+##  2          4.9         3            1.4         0.2 setosa 
+##  3          4.7         3.2          1.3         0.2 setosa 
+##  4          4.6         3.1          1.5         0.2 setosa 
+##  5          5           3.6          1.4         0.2 setosa 
+##  6          5.4         3.9          1.7         0.4 setosa 
+##  7          4.6         3.4          1.4         0.3 setosa 
+##  8          5           3.4          1.5         0.2 setosa 
+##  9          4.4         2.9          1.4         0.2 setosa 
+## 10          4.9         3.1          1.5         0.1 setosa 
+## # … with 140 more rows
+```
+
+変数のクラス (class) と tibble の大きさ (この場合は 150 行 5 列) などを教えくれます。
+`print()` メソッド (method) はデフォルトで 10 行表示してくれます。
+
+---
+
+## **代入演算子 (assignment operator) **　のメモ
+
+**代入演算子 (assignment operator) **
+
+`?assignOps` が代入演算子のヘルプです。
+
+* **`-&gt; -&gt;&gt;`**           右から左への代入
+* **`&lt;- &lt;&lt;-`**           左から右への代入
+* **`=`**                左から右への代入
+
+**`=`** は R のトップレベルと部分式 (subexpression) にしか使えない。書きやすいので、おすすめします。
+
+**`-&gt; &lt;-`** はどこからでも使える。
+
+**`-&gt;&gt; &lt;&lt;-`** もどこからでも使えるが、部分式外側にある変数に代入できる。永続代入演算子といいます。
+
+---
+
+class: center, middle
+# `tidyverse` 文法の基本
+
+---
+
+## よく使う関数（動詞; verbs）
+
+* **`read_csv()`**: CSVファイルをよむ（ベース R の `read.csv()` より使い勝手がいいです）。
+* **`mutate()`**: 新しい変数をつくる。
+* **`filter()`**: フィルターをかける。
+* **`select()`**: 変数をえらぶ。
+* **`summarise()`**: 集計する（ベース R の `summary()` と区別しましょう）。
+* **`group_by()`**: グループ化する。 
+
+**`readxl`** パッケージには
+
+* **`read_xlsx()`**: XLSXファイルをよむ。
+
+**`lubridate`** パッケージには
+
+* **`parse_datetime()`**: 日時データの定義につかう。
+
+
+
+---
+
+## `filter()` のデモ
+
+
+```r
+iris %&gt;% as_tibble() %&gt;% print(n = 2)
+```
+
+```
+## # A tibble: 150 x 5
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
+## 1          5.1         3.5          1.4         0.2 setosa 
+## 2          4.9         3            1.4         0.2 setosa 
+## # … with 148 more rows
+```
+
+`filter()` を使って、`Sepal.Length &lt;= 5` のデータを抽出します。
+
+```r
+iris %&gt;% as_tibble() %&gt;% filter(Sepal.Length &lt;= 5) %&gt;% print(n = 2)
+```
+
+```
+## # A tibble: 32 x 5
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
+## 1          4.9         3            1.4         0.2 setosa 
+## 2          4.7         3.2          1.3         0.2 setosa 
+## # … with 30 more rows
+```
+
+---
+
+## `mutate()` のデモ
+
+`mutate()` を使って、`Sepal.Length` と `Sepal.Width` の比 (`Ratio`) を求めます。
+
+
+```r
+iris %&gt;% as_tibble() %&gt;% mutate(Ratio = Sepal.Length / Sepal.Width)
+```
+
+```
+## # A tibble: 150 x 6
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species Ratio
+##           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;   &lt;dbl&gt;
+##  1          5.1         3.5          1.4         0.2 setosa   1.46
+##  2          4.9         3            1.4         0.2 setosa   1.63
+##  3          4.7         3.2          1.3         0.2 setosa   1.47
+##  4          4.6         3.1          1.5         0.2 setosa   1.48
+##  5          5           3.6          1.4         0.2 setosa   1.39
+##  6          5.4         3.9          1.7         0.4 setosa   1.38
+##  7          4.6         3.4          1.4         0.3 setosa   1.35
+##  8          5           3.4          1.5         0.2 setosa   1.47
+##  9          4.4         2.9          1.4         0.2 setosa   1.52
+## 10          4.9         3.1          1.5         0.1 setosa   1.58
+## # … with 140 more rows
+```
+
+---
+
+## `summarise()` のデモ
+
+.pull-left[
+
+`sumarise()` を使って、`Sepal.Length`　の平均値を求めます。
+
+
+```r
+iris %&gt;% as_tibble() %&gt;% 
+  summarise(Mean.Value = mean(Sepal.Length))
+```
+
+```
+## # A tibble: 1 x 1
+##   Mean.Value
+##        &lt;dbl&gt;
+## 1       5.84
+```
+]
+
+.pull-right[
+
+`group_by()` を使えば、`Species` 毎の平均値も求められます。
+
+
+```r
+iris %&gt;% group_by(Species) %&gt;% 
+  summarise(Mean.Value = mean(Sepal.Length))
+```
+
+```
+## # A tibble: 3 x 2
+##   Species    Mean.Value
+## * &lt;fct&gt;           &lt;dbl&gt;
+## 1 setosa           5.01
+## 2 versicolor       5.94
+## 3 virginica        6.59
+```
+
+ベース R のデータフレームを `tibble` に変換せずに、`tidyverse` の関数は使えます。
+]
+
+---
+
+class: center, middle
+
+# `tibble` の変形
+
+---
+
+## `tibble` の縦長・横広変形
+
+縦長 (long-format) &lt;svg viewBox="0 0 512 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M377.941 169.941V216H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.568 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296h243.882v46.059c0 21.382 25.851 32.09 40.971 16.971l86.059-86.059c9.373-9.373 9.373-24.568 0-33.941l-86.059-86.059c-15.119-15.12-40.971-4.412-40.971 16.97z"&gt;&lt;/path&gt;&lt;/svg&gt; 横広 (wide-format) への変換は pivoting といいます。
+
+`pivot_longer` をつかって `iris` を横広から縦長へ変換します。
+
+
+```r
+iris %&gt;% pivot_longer(cols = matches("^Sep|^Pet")) 
+```
+
+.pull-left[
+
+
+```
+## # A tibble: 600 x 3
+##    Species name         value
+##    &lt;fct&gt;   &lt;chr&gt;        &lt;dbl&gt;
+##  1 setosa  Sepal.Length   5.1
+##  2 setosa  Sepal.Width    3.5
+##  3 setosa  Petal.Length   1.4
+##  4 setosa  Petal.Width    0.2
+##  5 setosa  Sepal.Length   4.9
+##  6 setosa  Sepal.Width    3  
+##  7 setosa  Petal.Length   1.4
+##  8 setosa  Petal.Width    0.2
+##  9 setosa  Sepal.Length   4.7
+## 10 setosa  Sepal.Width    3.2
+## # … with 590 more rows
+```
+
+]
+
+.pull-right[
+
+`matches()` は[正規表現](https://ja.wikipedia.org/wiki/%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%8F%BE) により変数（列名）を選択します。
+ここでは、`Sep` または `Pet` の文字から始まる (^) 変数と一致した列名を選択します。
+
+]
+
+
+---
+
+## `tibble` の縦長・横広変形
+
+`pivot_wider()` は `tibble` を縦長から横広へ変換します。
+
+
+```r
+InsectSprays %&gt;% 
+  pivot_wider(names_from = spray, values_from = count)
+```
+
+```
+## Warning: Values are not uniquely identified; output will contain list-cols.
+## * Use `values_fn = list` to suppress this warning.
+## * Use `values_fn = length` to identify where the duplicates arise
+## * Use `values_fn = {summary_fun}` to summarise duplicates
+```
+
+```
+## # A tibble: 1 x 6
+##   A          B          C          D          E          F         
+##   &lt;list&gt;     &lt;list&gt;     &lt;list&gt;     &lt;list&gt;     &lt;list&gt;     &lt;list&gt;    
+## 1 &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt;
+```
+
+ここでは Warning がでました。
+「観測値の区別がきない」と警告しています。
+結果は list として出力しました。
+
+---
+
+## `tibble` の縦長・横広変形
+
+Warning は次のように解決できます。
+
+```r
+InsectSprays %&gt;% 
+  pivot_wider(names_from = spray, 
+              values_from = count,
+              values_fn = list) %&gt;% 
+  unnest(everything())
+```
+
+.pull-left[
+
+```
+## # A tibble: 12 x 6
+##       A     B     C     D     E     F
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1    10    11     0     3     3    11
+## 2     7    17     1     5     5     9
+## 3    20    21     7    12     3    15
+## 4    14    11     2     6     5    22
+## 5    14    16     3     4     3    15
+## 6    12    14     1     3     6    16
+## # … with 6 more rows
+```
+]
+
+.pull-right[
+* `values_fn = list` を指定して、Warning を抑えました。
+* `unnest()` を使って、たたまれた　`list` 変数を開きました。
+* `everything()` を `unnest()` に渡すと、たたまれているすべての変数を開くようにします。
+]
+
+---
+
+class: center, middle
+
+# 複数 `tibble` の結合
+
+---
+
+## 結合方法 (binding rows)
+
+**`bind_rows(A, B)`**
+
+&lt;img src="pngs/bind_rows_eqn.png" width="1507" style="display: block; margin: auto;" /&gt;
+
+`bind_rows()` はデータセット `A` に データセット `B`を追加します。
+
+---
+
+## 結合方法 (binding columns)
+
+**`bind_cols(X, Y)`**
+
+&lt;img src="pngs/bind_cols_eqn.png" width="1927" style="display: block; margin: auto;" /&gt;
+
+`bind_cols()` はデータセット `X` に データセット `Y` の変数を追加します。
+
+---
+
+## 結合方法 (left join)
+
+**`left_join(X, Y)`**
+
+&lt;img src="pngs/left_join_eqn.png" width="1647" style="display: block; margin: auto;" /&gt;
+
+`left_join()` は左のデータセット `X` を優先して `X` と `Y` の列と行を結合します。
+
+---
+
+## 結合方法 (right)
+
+**`right_join(X, Y)`**
+
+&lt;img src="pngs/right_join_eqn.png" width="1647" style="display: block; margin: auto;" /&gt;
+
+`right_join()` は右のデータセット `Y` を優先して `X` と `Y` の列と行を結合します。
+
+
+---
+
+## 結合方法 (inner)
+
+**`inner_join(X, Y)`**
+
+&lt;img src="pngs/inner_join_eqn.png" width="1647" style="display: block; margin: auto;" /&gt;
+
+`inner_join()` は `X` と `Y` で共通して存在する列だけ結合します。
+
+---
+
+## 結合方法 (full join)
+
+**`full_join(X, Y)`**
+
+&lt;img src="pngs/full_join_eqn.png" width="1647" style="display: block; margin: auto;" /&gt;
+
+`full_join()` はすべての列と行を結合します。
+お互いに該当しない場合は `NA` になります。
+
+---
+
+## 結合方法 (full join by A)
+
+**`full_join(X, Y, by = "A")`**
+
+&lt;img src="pngs/full_join_byA_eqn.png" width="1787" style="display: block; margin: auto;" /&gt;
+
+`full_join()` の `by` 引数に "`A`" を指定しました。
+`X` と `Y` の `A` 変数を軸にして列と行を結合します。
+お互いに該当しない場合は `NA` になります。
+
+---
+
+
+## 結合方法 (full join by C=D)
+
+**`full_join(X, Y, by = c("C" = "D"))`**
+
+&lt;img src="pngs/full_join_byCD_eqn.png" width="1787" style="display: block; margin: auto;" /&gt;
+
+`full_join()` の `by` 引数に `c("C" = "D")` を指定しました。
+`X` の `C` 変数 と `Y` の `D`  変数を合わせて列と行を結合します。
+お互いに該当しない場合は `NA` になります。
+
+**`left_join()`, `right_join()`, `inner_join()` にも `by` 引数があります。**
+
+---
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
