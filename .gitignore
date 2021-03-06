@@ -4,5 +4,5 @@
 .Ruserdata
 libs/
 *_cache/
-*_files/
+_files/
 *.Rproj
