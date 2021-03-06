@@ -17,10 +17,11 @@ output:
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set("fig.align" = "center")
+knitr::opts_chunk$set(dpi=300, fig.width = 80/25.4, fig.height = 80/25.4, fig.align = "center")
 library("tidyverse")
 library("ggpubr")
 library("lemon")
+library("showtext")
 library("magick")
 ```
 
@@ -432,3 +433,412 @@ knitr::include_graphics("pngs/full_join_byCD_eqn.png")
 ---
 
 
+class: center, middle
+
+# `ggplot2`
+
+---
+
+
+## `ggplot2` のデフォルト
+
+```{r, eval = FALSE}
+ggplot(iris) + #<<
+  geom_boxplot(aes(x = Species, y = Petal.Length))
+```
+
+.pull-left[
+
+```{r, echo = FALSE}
+ggplot(iris) + #<<
+  geom_boxplot(aes(x = Species, y = Petal.Length))
+```
+]
+
+.pull-right[
+
+ハイライト部分で `ggplot` のベースレイヤーを定義します。
+
+* 第 1 引数はデータ (data.frame, tibble)
+* 第 2 引数はマッピング (図に使う変数)
+* `ggplot()` に情報を渡すと、下流のプロットメソッドのデフォルトになります。
+]
+
+---
+
+## `ggplot2` のデフォルト
+
+```{r, eval = FALSE}
+ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) #<<
+```
+
+.pull-left[
+
+```{r, echo = FALSE}
+ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) #<<
+```
+]
+
+.pull-right[
+
+`geom_boxplot()` は箱ひげ図の関数です。
+
+* 第 1 引数はマッピング (図に使う変数) です。マッピングは `aes()` 関数でします。
+* 第 2 引数はデータ (data.frame, tibble) です。
+* 他の引数は `?geom_boxplot` で確認できます。
+* `geom_boxplot()` にデータやマッピングを渡せば、`ggplot()` に渡した情報を無視できます。
+]
+
+---
+
+## `iris` の図に軸タイトルを追加
+
+```{r, eval = FALSE}
+ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("Species") + #<<
+  scale_y_continuous("Petal length (mm)") #<<
+```
+
+.pull-left[
+
+```{r, echo = FALSE}
+ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("Species") +
+  scale_y_continuous("Petal length (mm)")
+```
+]
+
+.pull-right[
+
+x軸が因子のとき、`scale_x_discrete()`を使います。連続変数のときは `scale_x_continuous()` です。
+
+* 第 1 引数は軸のラベルです。
+* `breaks` 引数で軸の区切りを変えられます。
+* `limits` 引数で軸の範囲を指定できます。
+* 他の引数は `?scale_x_discrete` または `scale_x_continuous` で確認できます。
+]
+
+---
+
+## `iris` の図の背景を投稿用に
+
+```{r, eval = FALSE}
+ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("Species") + 
+  scale_y_continuous("Petal length (mm)") +
+  theme_pubr() #<<
+```
+
+.pull-left[
+
+```{r, echo = FALSE}
+ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("Species") +
+  scale_y_continuous("Petal length (mm)") +
+  theme_pubr() #<<
+```
+]
+
+.pull-right[
+
+`theme_pubr()` は `ggpubr` パッケージの関数です。これで簡単に図の見せ方を変えられます。
+
+* 第 1 引数は軸のラベルです。
+* `breaks` 引数で軸の区切りを変えられます。
+* `limits` 引数で軸の範囲を指定できます。
+* 他の引数は `?scale_x_discrete` または `scale_x_continuous` で確認できます。
+]
+
+---
+
+## `ggplot` をファイルに保存
+
+```{r, eval = FALSE}
+ggsave(filename = "figure01.png", plot = figure01,
+       width = 80, height = 80, dpi = 300, units = "mm")
+```
+
+.pull-left[
+* `filename`: ファイル名、ファイル形式は拡張子できまります。
+* `plot`: `ggplot`オブジェクト、デフォルトは最後に表示された図です。
+]
+
+.pull-right[
+* `width`, `height`, `units`: 図の寸法と寸法の単位。
+* `dpi`: ラスターグラフィックの場合は解像度、ベクターグラフィックの場合は不要。注意: `dpi` の設定によって、保存したフォントの大きさが変わります。
+]
+
+---
+
+## `iris` の箱ひげ図の出力
+
+解像度 96 と 300 の PNG ファイルを保存します。
+
+```{r}
+figure01 = ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("Species") +
+  scale_y_continuous("Petal length (mm)") +
+  theme_pubr(base_size = 10) 
+
+# Resolution is 96
+ggsave(filename = "figure01_96.png", plot = figure01,
+       width = 80, height = 80, dpi = 96, units = "mm")
+
+# Resolution is 300
+ggsave(filename = "figure01_300.png", plot = figure01,
+       width = 80, height = 80, dpi = 300, units = "mm")
+```
+
+
+---
+
+## `iris` png ファイル
+
+.pull-left[
+
+**保存した解像度 96 のフィアル**
+
+```{r, echo = FALSE, out.width="90%"}
+knitr::include_graphics("figure01_96.png")
+```
+]
+
+.pull-right[
+
+**保存した解像度 300 のフィアル**
+
+```{r, echo = FALSE, out.width="90%"}
+knitr::include_graphics("figure01_300.png")
+```
+]
+
+---
+
+
+## RStudio の解像度とフォントサイズ問題
+
+.pull-left[
+
+**インタラクティブ (interactive) でないとき**
+
+```{r, echo = FALSE}
+knitr::include_graphics("figure01_300.png")
+```
+]
+
+.pull-right[
+
+**インタラクティブであるとき**
+
+```{r, echo = FALSE}
+knitr::include_graphics("figure01_300_interactive.png")
+```
+
+]
+
+**注意:** RStudio をインタラクティブに使っているときに図を保存したら、フォントサイズは解像度に合わない。図のフォントサイズは 10 解像度は 300 です。
+
+**解決方法:** R スクリプトを `Source` (`CTRL+SHIFT+S`)  すれば、フォントサイズと解像度のスケーリング問題が消えます。
+
+
+---
+
+## Publication ready figures
+
+**最もシンプルな方法**
+
+1. 図はPDFまたはSVGファイルとして保存
+2. Imagemagick、GIMP、Inkscape、Adobe Photoshop/Illustrator などのソフトで変換
+
+
+```{r, eval = FALSE}
+figure01 = ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("Species") +
+  scale_y_continuous("花びらの長さ (mm)") +
+  theme_pubr()
+
+ggsave("figure01.pdf", plot = figure01, 
+       width = 80, height = 80, units = "mm", 
+       device = cairo_pdf)
+```
+
+**重要:** `ggsave()` に `device = cairo_pdf` を渡しました。`Cairo graphics library` はユニコード文字を正しくPDFに埋め込んでくれるので、好みのフォントも使えるようになります。
+
+---
+
+## システムフォントの埋め込み
+
+システムフォントを R の図に使うなら、`showtext` パッケージがあるととても楽です。
+```{r, eval = FALSE}
+library(showtext)
+font_paths() # Show the system font paths
+font_files() # Show the system font files
+```
+
+```{r}
+font_add("notoserifcjk", regular = "NotoSerifCJKjp-Regular.otf")
+showtext_auto()
+figure02 = ggplot(iris) + 
+  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+  scale_x_discrete("種") +
+  scale_y_continuous("花びらの長さ (mm)") +
+  theme_pubr(base_family = "notoserifcjk") 
+
+ggsave("figure02.pdf", 
+       plot = figure02, 
+       width = 80, height = 80, units = "mm", device = cairo_pdf)
+```
+```{r, echo = FALSE}
+image_read_pdf("figure02.pdf", density = 600) %>% 
+  image_write("figure02_convert.png",
+              density = 300,
+              flatten = TRUE,
+              depth = 8)
+```
+
+---
+
+## システムフォントの埋め込み
+
+```{r, echo = FALSE, out.width="60%"}
+knitr::include_graphics("figure02_convert.png")
+```
+
+---
+
+## システムフォントの埋め込み
+
+```{r, eval = FALSE}
+font_add("notoserif", 
+         regular = "NotoSerifCJKjp-Regular.otf",
+         italic = "NotoSerif-Italic.ttf")
+showtext_auto()
+
+xlabel = iris %>% pull(Species) %>% levels()
+xlabel = str_glue("italic('I.')~italic('{xlabel}')")
+
+iris %>% 
+  ggplot() + 
+  geom_point(aes(x = Species, y = Petal.Length, color = Species),
+             position = position_jitter(0.1),
+             alpha = 0.8) +
+  scale_x_discrete("種", label = parse(text = xlabel)) +
+  scale_y_continuous("花びらの長さ (mm)",
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_color_manual(label = parse(text = xlabel),
+                     values = viridis::viridis(4)) +
+  theme_pubr(base_family = "notoserif") + 
+  theme(legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.position = c(0,1),
+        legend.justification = c(0,1),
+        legend.text.align = 0)
+```
+
+---
+
+## システムフォントの埋め込み
+
+```{r, echo = FALSE,  fig.width=80/25.4 * 1.5}
+font_add("notoserif", 
+         regular = "NotoSerifCJKjp-Regular.otf",
+         italic = "NotoSerif-Italic.ttf")
+showtext_auto()
+
+xlabel = iris %>% pull(Species) %>% levels()
+xlabel = str_glue("italic('I.')~italic('{xlabel}')")
+
+iris %>% 
+  ggplot() + 
+  geom_point(aes(x = Species, y = Petal.Length, color = Species),
+             position = position_jitter(0.1),
+             alpha = 0.8) +
+  scale_x_discrete("種", label = parse(text = xlabel)) +
+  scale_y_continuous("花びらの長さ (mm)",
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_color_manual(label = parse(text = xlabel),
+                     values = viridis::viridis(4)) +
+  theme_pubr(base_family = "notoserif") + 
+  theme(legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.position = c(0,1),
+        legend.justification = c(0,1),
+        legend.text.align = 0)
+```
+
+---
+
+## システムフォントの埋め込み
+
+```{r, echo = FALSE,  fig.width=80/25.4 * 1.5}
+yname = "'BOD'~(mg~L^{-1})"
+
+ggplot(BOD) + 
+  geom_point(aes(x = Time, y = demand)) +
+  scale_x_continuous("Time (days)", 
+                     limits = c(0, 7),
+                     breaks = 0:7) +
+  scale_y_continuous(name = parse(text = yname),
+                     limits = c(0, 20)) +
+  theme_pubr(base_family = "notoserif") 
+```
+---
+
+
+## システムフォントの埋め込み
+
+```{r, echo = FALSE,  fig.width=80/25.4 * 1.5}
+yname = "'BOD'~(mg~L^{-1})"
+
+m1 = glm(demand ~ Time, data = BOD, family = gaussian("identity"))
+
+expectations = BOD %>% expand(Time = seq(1, 7, by = 0.5)) %>% 
+  mutate(fit = predict(m1, newdata = ., type = "response")) %>% 
+  mutate(se = predict(m1, newdata = ., type = "response", se.fit = T)$se) 
+
+ggplot() + 
+  geom_ribbon(aes(x = Time, ymin = fit - 2 * se, ymax = fit + 2 * se),
+              alpha = 0.6,
+              data = expectations) +
+    geom_line(aes(x = Time, y = fit), data = expectations) +
+  geom_point(aes(x = Time, y = demand), 
+             data = BOD) +
+  scale_x_continuous("Time (days)", 
+                     limits = c(0, 7),
+                     breaks = 0:7) +
+  scale_y_continuous(name = parse(text = yname)) +
+  theme_pubr(base_family = "notoserif") 
+
+```
+---
+
+
+
+## Convert with ImageMagick
+
+[ImageMagick](https://imagemagick.org/) は画像を操作するためのソフトです。
+[`magick`](https://cran.r-project.org/web/packages/magick/vignettes/intro.html) は ImageMagick のラッパー (wrapper) です。
+
+
+```{r, eval = FALSE}
+library(magick)
+img = image_read_pdf("figure01.pdf", density = 600)
+img %>% image_write("figure01_convert.tif",
+              density = 300,
+              format = "tif",
+              flatten = TRUE,
+              depth = 8,
+              compression = "lzw")
+```
+
+--- 
