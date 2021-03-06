@@ -39,7 +39,6 @@ style_mono_accent(
 
 # Workshop について
 
-
 **スケジュール**
 
 * 13:00 -- 14:30　効率的なデータ処理 (tidyverse の紹介)
@@ -72,10 +71,10 @@ install.packages(c("tidyverse", "ggpubr", "lemon"))
 image_read("web_images/tidyverse.png") %>% 
   image_resize(geometry = "1000x") %>% 
   image_annotate("https://tidyverse.org",
-                       size = 30,
-                       font = "Noto Sans",
-                       gravity = "southeast",
-                       color = "#1c5253") %>% 
+                 size = 30,
+                 font = "Noto Sans",
+                 gravity = "southeast",
+                 color = "#1c5253") %>% 
   image_write(path = "web_images/tidyverse_link.png")
 knitr::include_graphics("web_images/tidyverse_link.png")
 ```
@@ -435,12 +434,12 @@ knitr::include_graphics("pngs/full_join_byCD_eqn.png")
 
 class: center, middle
 
-# `ggplot2`
+# Publication ready figures with `ggplot2`
 
 ---
 
 
-## `ggplot2` のデフォルト
+## `ggplot2` の基本
 
 ```{r, eval = FALSE}
 ggplot(iris) + #<<
@@ -466,7 +465,7 @@ ggplot(iris) + #<<
 
 ---
 
-## `ggplot2` のデフォルト
+## `ggplot2` の基本
 
 ```{r, eval = FALSE}
 ggplot(iris) + 
@@ -514,7 +513,7 @@ ggplot(iris) +
 
 .pull-right[
 
-x軸が因子のとき、`scale_x_discrete()`を使います。連続変数のときは `scale_x_continuous()` です。
+x 軸が因子のとき、`scale_x_discrete()`を使います。連続変数のときは `scale_x_continuous()` です。
 
 * 第 1 引数は軸のラベルです。
 * `breaks` 引数で軸の区切りを変えられます。
@@ -524,7 +523,7 @@ x軸が因子のとき、`scale_x_discrete()`を使います。連続変数の�
 
 ---
 
-## `iris` の図の背景を投稿用に
+## `iris` の図の背景を白にする
 
 ```{r, eval = FALSE}
 ggplot(iris) + 
@@ -548,6 +547,7 @@ ggplot(iris) +
 .pull-right[
 
 `theme_pubr()` は `ggpubr` パッケージの関数です。これで簡単に図の見せ方を変えられます。
+`theme()` を使ってもできます。
 
 * 第 1 引数は軸のラベルです。
 * `breaks` 引数で軸の区切りを変えられます。
@@ -557,7 +557,7 @@ ggplot(iris) +
 
 ---
 
-## `ggplot` をファイルに保存
+## `ggplot` の出力（ファイルへ保存）
 
 ```{r, eval = FALSE}
 ggsave(filename = "figure01.png", plot = figure01,
@@ -565,6 +565,7 @@ ggsave(filename = "figure01.png", plot = figure01,
 ```
 
 .pull-left[
+* `ggsave()` は `ggplot` を保存するための関数です。
 * `filename`: ファイル名、ファイル形式は拡張子できまります。
 * `plot`: `ggplot`オブジェクト、デフォルトは最後に表示された図です。
 ]
@@ -599,7 +600,7 @@ ggsave(filename = "figure01_300.png", plot = figure01,
 
 ---
 
-## `iris` png ファイル
+## 保存した 2種類の PNG ファイル
 
 .pull-left[
 
@@ -622,7 +623,7 @@ knitr::include_graphics("figure01_300.png")
 ---
 
 
-## RStudio の解像度とフォントサイズ問題
+## RStudio の解像度とフォントサイズの問題
 
 .pull-left[
 
@@ -643,19 +644,18 @@ knitr::include_graphics("figure01_300_interactive.png")
 
 ]
 
-**注意:** RStudio をインタラクティブに使っているときに図を保存したら、フォントサイズは解像度に合わない。図のフォントサイズは 10 解像度は 300 です。
+**注意:** RStudio IDE をインタラクティブに使っているときに図を保存すると、フォントサイズと解像度が合わなくなります。右図のフォントサイズは 10、 解像度は 300 です。
 
-**解決方法:** R スクリプトを `Source` (`CTRL+SHIFT+S`)  すれば、フォントサイズと解像度のスケーリング問題が消えます。
-
+**解決方法:** R スクリプトを `Source` (`CTRL+SHIFT+S`)  すれば、この問題が消えます。
 
 ---
 
-## Publication ready figures
+## 投稿ようの作図
 
-**最もシンプルな方法**
+**最もシンプルな方法** 
 
-1. 図はPDFまたはSVGファイルとして保存
-2. Imagemagick、GIMP、Inkscape、Adobe Photoshop/Illustrator などのソフトで変換
+1. R の図は PDF または SVG ファイルとして保存
+2. 保存した図を Imagemagick、GIMP、Inkscape、Adobe Photoshop/Illustrator などのソフトで必要な形式に変換
 
 
 ```{r, eval = FALSE}
@@ -665,27 +665,50 @@ figure01 = ggplot(iris) +
   scale_y_continuous("花びらの長さ (mm)") +
   theme_pubr()
 
+# figure01 を figure01.pdf に保存
 ggsave("figure01.pdf", plot = figure01, 
        width = 80, height = 80, units = "mm", 
        device = cairo_pdf)
 ```
 
-**重要:** `ggsave()` に `device = cairo_pdf` を渡しました。`Cairo graphics library` はユニコード文字を正しくPDFに埋め込んでくれるので、好みのフォントも使えるようになります。
+**重要:** `ggsave()` に `device = cairo_pdf` を渡しました。`Cairo graphics library` はユニコード文字を正しくPDFに埋め込んでくれるので、好みのフォントまたは指定されたフォントを使えるようになります。
 
 ---
 
 ## システムフォントの埋め込み
 
-システムフォントを R の図に使うなら、`showtext` パッケージがあるととても楽です。
+R のデフォルトフォントは serif と sans ですが、好みのフォントも使えます。
+フォントの指定は、`showtext` パッケージを使います。
+
+
+使用可能なフォントは `font_paths()` と `font_files()` で確認できます。
+
 ```{r, eval = FALSE}
 library(showtext)
 font_paths() # Show the system font paths
 font_files() # Show the system font files
 ```
 
+`font_add()` でフォントを R 環境に追加します。
+
 ```{r}
 font_add("notoserifcjk", regular = "NotoSerifCJKjp-Regular.otf")
+```
+
+---
+
+## システムフォントの埋め込み
+
+`ggplot` にフォントを埋め込むなら、`showtext_auto()` を作図の前に実行します。
+
+```{r}
 showtext_auto()
+```
+
+`font_add()` で追加したフォントは `theme_pubr()` の `base_family` 引数に渡します。
+`ggsave()` に `device = cairo_pdf` を渡さないと，フォントを正しく埋め込まれていないこともあります。
+
+```{r}
 figure02 = ggplot(iris) + 
   geom_boxplot(aes(x = Species, y = Petal.Length)) +
   scale_x_discrete("種") +
@@ -706,7 +729,7 @@ image_read_pdf("figure02.pdf", density = 600) %>%
 
 ---
 
-## システムフォントの埋め込み
+## 完成した `figure02`
 
 ```{r, echo = FALSE, out.width="60%"}
 knitr::include_graphics("figure02_convert.png")
@@ -714,22 +737,46 @@ knitr::include_graphics("figure02_convert.png")
 
 ---
 
-## システムフォントの埋め込み
+## 図の詳細の工夫
+
+ここで使った Noto Serif CJK のフォントにイタリック体が存在しません。
+`font_add()`　にイタリック体のためのフォントを追加します。
+
+```{r}
+font_add("notoserif", 
+         regular = "NotoSerifCJKjp-Regular.otf",
+         italic = "NotoSerif-Italic.ttf")
+```
+
+ここで図の種名をイタリック体にします。
+`iris` から `Species` の変数の抽出して、各因子を `xlabel` に入れます。
+
+```{r}
+xlabel = iris %>% pull(Species) %>% levels()
+# xlabel = levels(iris$Species)
+# xlabel = unique(iris$Species)
+```
+
+イタリック体にするコードは通りです。
+数式とし定義しますが、`expression()` の必要はありません。
+```{r}
+xlabel = str_glue("italic('I.')~italic('{xlabel}')")
+# xlabel = paste0("italic('I.')~italic('", xlabel ,"')" )
+```
+
+数式の記号は `?plotmath` で確認できます。
+
+---
+
+## 図の詳細の工夫
+
+`ggplot` のコードです。散布図 (`geom_point()`) を作図しました。
 
 ```{r, eval = FALSE}
-font_add("notoserif", 
-         regular = "NotoSerifCJKjp-Regular.otf",
-         italic = "NotoSerif-Italic.ttf")
-showtext_auto()
-
-xlabel = iris %>% pull(Species) %>% levels()
-xlabel = str_glue("italic('I.')~italic('{xlabel}')")
-
-iris %>% 
-  ggplot() + 
+ggplot(iris) + 
   geom_point(aes(x = Species, y = Petal.Length, color = Species),
-             position = position_jitter(0.1),
-             alpha = 0.8) +
+             position = position_jitter(0.1), #<<
+             alpha = 0.8) + #<<
   scale_x_discrete("種", label = parse(text = xlabel)) +
   scale_y_continuous("花びらの長さ (mm)",
                      limits = c(0, 8),
@@ -744,21 +791,76 @@ iris %>%
         legend.text.align = 0)
 ```
 
+`position_jitter()` で点の位置を無作為にずらしています。
+`alpha = 0.8` は透明度の引数 (0 -- 1の値) です。
+
 ---
 
-## システムフォントの埋め込み
+## 図の詳細の工夫
+
+```{r, eval = FALSE}
+ggplot(iris) + 
+  geom_point(aes(x = Species, y = Petal.Length, color = Species),
+             position = position_jitter(0.1), 
+             alpha = 0.8) + 
+  scale_x_discrete("種", label = parse(text = xlabel)) +
+  scale_y_continuous("花びらの長さ (mm)",
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_color_manual(label = parse(text = xlabel),   #<<
+                     values = viridis::viridis(4)) + #<<
+  theme_pubr(base_family = "notoserif") + 
+  theme(legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.position = c(0,1),
+        legend.justification = c(0,1),
+        legend.text.align = 0)
+```
+
+`scale_color_manual()` で点の色を指定しました。
+`xlabel`　を `parse()` に渡すと、`expression` に変換されます。
+`values = viridis::viridis(4)` で色を指定しました。
+色覚以上に配慮したパレットです。
+
+---
+
+## 図の詳細の工夫
+
+```{r, eval = FALSE}
+ggplot(iris) + 
+  geom_point(aes(x = Species, y = Petal.Length, color = Species),
+             position = position_jitter(0.1), 
+             alpha = 0.8) + 
+  scale_x_discrete("種", label = parse(text = xlabel)) +
+  scale_y_continuous("花びらの長さ (mm)",
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_color_manual(label = parse(text = xlabel),   
+                     values = viridis::viridis(4)) + 
+  theme_pubr(base_family = "notoserif") + 
+  theme(legend.title = element_blank(),      #<<
+        legend.background = element_blank(), #<<
+        legend.position = c(0,1),            #<<
+        legend.justification = c(0,1),       #<<
+        legend.text.align = 0)               #<<
+```
+
+`theme()` で `theme_pubr()` 凡例 (legend) の設定を操作しています。
+凡例のタイトルと背景を `element_blank()`　で外しています。
+凡例の位置は `legend.position = c(0, 1)` で固定しました。
+(0, 0) はパネル部分の左下の位置です。(1, 1) は右上です。
+`legend.justification = c(0,1)` 位置設定に対する凡例の位置を指定しています。
+この場合，凡例の (0, 1) の位置を図の (0, 1) の位置に設定します。
+`lgend.text.align = 0` は凡例内の文字列の位置です。
+0 は左揃え、1 は右揃えです。
+---
+
+## 完成した図
+
+保存したときに，`width = 1.5 * 80` を渡したので長方形になりました。
 
 ```{r, echo = FALSE,  fig.width=80/25.4 * 1.5}
-font_add("notoserif", 
-         regular = "NotoSerifCJKjp-Regular.otf",
-         italic = "NotoSerif-Italic.ttf")
-showtext_auto()
-
-xlabel = iris %>% pull(Species) %>% levels()
-xlabel = str_glue("italic('I.')~italic('{xlabel}')")
-
-iris %>% 
-  ggplot() + 
+ggplot(iris) + 
   geom_point(aes(x = Species, y = Petal.Length, color = Species),
              position = position_jitter(0.1),
              alpha = 0.8) +
@@ -778,7 +880,30 @@ iris %>%
 
 ---
 
-## システムフォントの埋め込み
+## 軸ラベルの書き方
+
+軸ラベルも数式 (expression) として書きます。
+
+```{r, eval = FALSE,  fig.width=80/25.4 * 1.5}
+yname = "'BOD'~(mg~L^{-1})"
+
+ggplot(BOD) + 
+  geom_point(aes(x = Time, y = demand)) +
+  scale_x_continuous("Time (days)", 
+                     limits = c(0, 7),
+                     breaks = 0:7) +
+  scale_y_continuous(name = parse(text = yname), #<<
+                     limits = c(0, 20)) +
+  theme_pubr(base_family = "notoserif") 
+```
+
+`parse(text = yname)` で文字列を数式に変換します。
+
+`L^{-1}` は上付き、`O[2]` は下付きです。
+
+---
+
+## 完成した図
 
 ```{r, echo = FALSE,  fig.width=80/25.4 * 1.5}
 yname = "'BOD'~(mg~L^{-1})"
@@ -788,29 +913,45 @@ ggplot(BOD) +
   scale_x_continuous("Time (days)", 
                      limits = c(0, 7),
                      breaks = 0:7) +
-  scale_y_continuous(name = parse(text = yname),
+  scale_y_continuous(name = parse(text = yname), #<<
                      limits = c(0, 20)) +
   theme_pubr(base_family = "notoserif") 
 ```
+
 ---
 
+## 当てはめてモデル追加する
 
-## システムフォントの埋め込み
+まずはモデルを当てはめます。
 
-```{r, echo = FALSE,  fig.width=80/25.4 * 1.5}
-yname = "'BOD'~(mg~L^{-1})"
-
+```{r}
+# Fit the GLM
 m1 = glm(demand ~ Time, data = BOD, family = gaussian("identity"))
+```
 
-expectations = BOD %>% expand(Time = seq(1, 7, by = 0.5)) %>% 
-  mutate(fit = predict(m1, newdata = ., type = "response")) %>% 
-  mutate(se = predict(m1, newdata = ., type = "response", se.fit = T)$se) 
+当てはめたモデルから期待値と期待値 (expectation) の標準誤差 (standard error) を求めます。
+```{r}
+expectations = BOD %>% 
+  expand(Time = seq(1, 7, by = 0.5)) %>% 
+  mutate(fit = predict(m1, newdata = ., 
+                       type = "response")) %>% 
+  mutate(se = predict(m1, newdata = ., 
+                      type = "response", se.fit = T)$se) 
+```
 
+---
+
+## 当てはめてモデル追加する
+
+```{r, eval = FALSE}
 ggplot() + 
-  geom_ribbon(aes(x = Time, ymin = fit - 2 * se, ymax = fit + 2 * se),
+  geom_ribbon(aes(x = Time, 
+                  ymin = fit - 1.96 * se, 
+                  ymax = fit + 1.96 * se),
               alpha = 0.6,
               data = expectations) +
-    geom_line(aes(x = Time, y = fit), data = expectations) +
+  geom_line(aes(x = Time, y = fit), 
+            data = expectations) +
   geom_point(aes(x = Time, y = demand), 
              data = BOD) +
   scale_x_continuous("Time (days)", 
@@ -818,10 +959,35 @@ ggplot() +
                      breaks = 0:7) +
   scale_y_continuous(name = parse(text = yname)) +
   theme_pubr(base_family = "notoserif") 
-
 ```
+
+`geom_ribbon()` で 95% の信頼区間のせます。
+`geom_line()` でモデルの期待値をのせます。
+`ggplot` はレイヤーを重ねて描くので、最後にくる`geom` は図の一番上のレイヤーです。
+
 ---
 
+## 当てはめてモデル追加する
+
+```{r, echo = FALSE, fig.width=80/25.4 * 1.5}
+ggplot() + 
+  geom_ribbon(aes(x = Time, 
+                  ymin = fit - 1.96 * se, 
+                  ymax = fit + 1.96 * se),
+              alpha = 0.6,
+              data = expectations) +
+  geom_line(aes(x = Time, y = fit), 
+            data = expectations) +
+  geom_point(aes(x = Time, y = demand), 
+             data = BOD) +
+  scale_x_continuous("Time (days)", 
+                     limits = c(0, 7),
+                     breaks = 0:7) +
+  scale_y_continuous(name = parse(text = yname)) +
+  theme_pubr(base_family = "notoserif") 
+```
+
+---
 
 
 ## Convert with ImageMagick
@@ -834,11 +1000,11 @@ ggplot() +
 library(magick)
 img = image_read_pdf("figure01.pdf", density = 600)
 img %>% image_write("figure01_convert.tif",
-              density = 300,
-              format = "tif",
-              flatten = TRUE,
-              depth = 8,
-              compression = "lzw")
+                    density = 300,
+                    format = "tif",
+                    flatten = TRUE,
+                    depth = 8,
+                    compression = "lzw")
 ```
 
 --- 
