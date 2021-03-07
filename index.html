@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 ## 中級コース
 ### Gregory N. Nishihara
 ### Nagasaki University
-### 2021/03/15 (updated: 2021-03-06)
+### 2021/03/15 (updated: 2021-03-07)
 
 ---
 
@@ -29,6 +29,7 @@ class: center, middle, inverse, title-slide
 
 # Workshop について
 
+.content-box-green[
 
 **スケジュール**
 
@@ -37,12 +38,14 @@ class: center, middle, inverse, title-slide
 * 14:45 -- 16:15　論文投稿用の作図方法 (ggplot2 の紹介)
 * 16:15 -- 17:00　質疑応答
 
+]
 
-**tidyverse**, **ggpubr**, **lemon**のパッケージをインストールしてください。
+**tidyverse**, **ggpubr**, **lemon**, **viridis**, **showtext**, **patchwork** のパッケージをインストールしてください。
 
 
 ```r
-install.packages(c("tidyverse", "ggpubr", "lemon"))
+install.packages(c("tidyverse", "ggpubr", 
+                   "lemon", "viridis", "showtext", "patchwork"))
 ```
 
 **tidyverse** は、**ggplot2**, **dplyr**, **tidyr**, **readr**, **purrr**, **tibble**, **stringr**, **forcats**の８つのパッケージをまとめたパッケージです。
@@ -53,9 +56,10 @@ install.packages(c("tidyverse", "ggpubr", "lemon"))
 
 ## `tidyverse` とは
 
-* [開発者：Hadley Wickham (@hadleywickham; RStudio Chief Scientist)](http://hadley.nz/)
+* [開発者：Hadley Wickham (&lt;svg viewBox="0 0 512 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"&gt;&lt;/path&gt;&lt;/svg&gt; @hadleywickham; RStudio Chief Scientist)](http://hadley.nz/)
 * [useR2016](https://twitter.com/hadleywickham/status/959507805282582528) ではじめて紹介されました。
 * コアパッケージ以外の `tidyverse` パッケージは `tidyverse_packages()` で確認できます。
+* パイプ (pipe) 演算子を一般化したシステム
 
 .centerfig[
 [
@@ -65,13 +69,19 @@ install.packages(c("tidyverse", "ggpubr", "lemon"))
 
 ---
 
+class: center, middle
+# `tidyverse` 文法の基本&lt;br/&gt; pipe, tibble, verbs
+
+---
+
 ## パイプ (pipe) とは
 
 .pull-left[
 
 * `tidyverse` といえば、パイプ
 * ` %&gt;% `
-* RStudio では **`SHIFT+CTRL+M`** で入力できます。
+* RStudio&lt;sup&gt;1&lt;/sup&gt; では **`CTRL+SHIFT+M`** で入力できます。
+OSXの場合は **`CMD+SHIFT+M`** です。
 * Linux ユーサーになじみのある演算子 (operator)
 ]
 
@@ -94,11 +104,16 @@ z = x %&gt;% f(y)# tidyverse
 
 ]
 
--------------------
+.content-box-green[
 
 * `%&gt;%` の左辺 `x` を右辺 `f()` に渡すために使います。
-* 特別に指定しなければ、左辺 `x` は `f()` の第 1 引数に渡されます。
+* デフォルトとして、左辺 `x` は `f()` の第 1 引数に渡されます。
 
+]
+
+.footnote[
+&lt;sup&gt;1&lt;/sup&gt;RStudio のショートカットキーは `ALT+SHIFT+K` で確認できます。
+]
 
 ---
 
@@ -124,7 +139,7 @@ head(iris)
 ## 6          5.4         3.9          1.7         0.4  setosa
 ```
 
-データフレーべム (data frame) は変数&lt;sup&gt;1&lt;/sup&gt; (variable) と観測値&lt;sup&gt;2&lt;/sup&gt; (observation) を正方形の表にまとめたオブジェクト (object) です。
+データフレーべム (data frame) は変数&lt;sup&gt;1&lt;/sup&gt; (variable) と観測値&lt;sup&gt;2&lt;/sup&gt; (observation) を表にまとめたオブジェクト (object) です。
 
 .footnote[
 &lt;sup&gt;1&lt;/sup&gt;変数は列; &lt;sup&gt;2&lt;/sup&gt;観測値は行
@@ -159,86 +174,110 @@ as_tibble(iris) # tidyverse tibble
 変数のクラス (class) と tibble の大きさ (この場合は 150 行 5 列) などを教えくれます。
 `print()` メソッド (method) はデフォルトで 10 行表示してくれます。
 
+
+```r
+as_tibble(iris) %&gt;% print(n = 2) # List only two lines
+```
+
+
 ---
 
-## **代入演算子 (assignment operator) **　のメモ
+## 代入演算子のメモ　(`&lt;-` と `=`)
 
-**代入演算子 (assignment operator) **
+実は数種類の**代入演算子 (assignment operator) **が存在します。
 
-`?assignOps` が代入演算子のヘルプです。
+.content-box-green[
+
+代入演算子のヘルプは `?assignOps` でみれます。
 
 * **`-&gt; -&gt;&gt;`**           右から左への代入
 * **`&lt;- &lt;&lt;-`**           左から右への代入
 * **`=`**                左から右への代入
 
-**`=`** は R のトップレベルと部分式 (subexpression) にしか使えない。書きやすいので、おすすめします。
+]
 
-**`-&gt; &lt;-`** はどこからでも使える。
+.content-box-yellow[
 
-**`-&gt;&gt; &lt;&lt;-`** もどこからでも使えるが、部分式外側にある変数に代入できる。永続代入演算子といいます。
+**`=`** は R のトップレベルと部分式 (subexpression) にしか使えません。
+書きやすいので、おすすめします。
+
+]
+
+**`-&gt; &lt;-`** はどこからでも使えます。
+
+**`-&gt;&gt; &lt;&lt;-`** もどこからでも使えますが、部分式外側にある変数にも代入でます。
+永続代入演算子ともいいます。
+
+Google のスタイルガイドは `&lt;-` を使っています。 
 
 ---
 
-class: center, middle
-# `tidyverse` 文法の基本
+## `tidyverse` のよく使う関数
 
----
+`tidyverse` でのデータ操作は `dplyr` にある 5 つの基礎的な関数 (動詞) を使います。
 
-## よく使う関数（動詞; verbs）
+* **`mutate()`**: 新しい変数 (列) を追加する。
+* **`select()`**: 変数を選ぶ。
+* **`filter()`**: フィルターをかける。
+* **`summarise()`**: 集計する（ベース R の `summary()` と区別しましょう）。
+* **`arrange()`**: 行の順序をかえる。
+
+.pull-left[
+
+**データ読み込みの関数**
+
+
 
 * **`read_csv()`**: CSVファイルをよむ（ベース R の `read.csv()` より使い勝手がいいです）。
-* **`mutate()`**: 新しい変数をつくる。
-* **`filter()`**: フィルターをかける。
-* **`select()`**: 変数をえらぶ。
-* **`summarise()`**: 集計する（ベース R の `summary()` と区別しましょう）。
-* **`group_by()`**: グループ化する。 
+(`readr`パッケージ )
+* **`read_rds()`**: RオブジェクトをRDSファイルから読み込む。 (`readr` パッケージ)
+* **`read_xlsx()`**: XLSXファイルをよむ。(`readxl` パッケージ)
 
-**`readxl`** パッケージには
+]
 
-* **`read_xlsx()`**: XLSXファイルをよむ。
+.pull-right[
 
-**`lubridate`** パッケージには
+**データ書き込むの関数**
 
-* **`parse_datetime()`**: 日時データの定義につかう。
+* **`write_csv()`**: tibble をCSVファイルに書き込む。(`readr` パッケージ)
+* **`write_rds()`**: RオブジェクトをRDSファイルに書き込む。 (`readr` パッケージ)
 
+**日時操作の関数**
 
+* **`parse_datetime()`**: 日時データの定義につかう。(`lubridate` パッケージ)
+
+]
 
 ---
 
-## `filter()` のデモ
-
-
-```r
-iris %&gt;% as_tibble() %&gt;% print(n = 2)
-```
-
-```
-## # A tibble: 150 x 5
-##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
-##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
-## 1          5.1         3.5          1.4         0.2 setosa 
-## 2          4.9         3            1.4         0.2 setosa 
-## # … with 148 more rows
-```
+## `filter()` 
 
 `filter()` を使って、`Sepal.Length &lt;= 5` のデータを抽出します。
 
 ```r
-iris %&gt;% as_tibble() %&gt;% filter(Sepal.Length &lt;= 5) %&gt;% print(n = 2)
+iris %&gt;% as_tibble() %&gt;% filter(Sepal.Length &lt;= 5)
 ```
 
 ```
 ## # A tibble: 32 x 5
-##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
-##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
-## 1          4.9         3            1.4         0.2 setosa 
-## 2          4.7         3.2          1.3         0.2 setosa 
-## # … with 30 more rows
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
+##  1          4.9         3            1.4         0.2 setosa 
+##  2          4.7         3.2          1.3         0.2 setosa 
+##  3          4.6         3.1          1.5         0.2 setosa 
+##  4          5           3.6          1.4         0.2 setosa 
+##  5          4.6         3.4          1.4         0.3 setosa 
+##  6          5           3.4          1.5         0.2 setosa 
+##  7          4.4         2.9          1.4         0.2 setosa 
+##  8          4.9         3.1          1.5         0.1 setosa 
+##  9          4.8         3.4          1.6         0.2 setosa 
+## 10          4.8         3            1.4         0.1 setosa 
+## # … with 22 more rows
 ```
 
 ---
 
-## `mutate()` のデモ
+## `mutate()`
 
 `mutate()` を使って、`Sepal.Length` と `Sepal.Width` の比 (`Ratio`) を求めます。
 
@@ -266,7 +305,7 @@ iris %&gt;% as_tibble() %&gt;% mutate(Ratio = Sepal.Length / Sepal.Width)
 
 ---
 
-## `summarise()` のデモ
+## `summarise()`
 
 .pull-left[
 
@@ -274,15 +313,14 @@ iris %&gt;% as_tibble() %&gt;% mutate(Ratio = Sepal.Length / Sepal.Width)
 
 
 ```r
-iris %&gt;% as_tibble() %&gt;% 
-  summarise(Mean.Value = mean(Sepal.Length))
+iris %&gt;% 
+  summarise(Mean.Value = 
+              mean(Sepal.Length))
 ```
 
 ```
-## # A tibble: 1 x 1
 ##   Mean.Value
-##        &lt;dbl&gt;
-## 1       5.84
+## 1   5.843333
 ```
 ]
 
@@ -293,7 +331,8 @@ iris %&gt;% as_tibble() %&gt;%
 
 ```r
 iris %&gt;% group_by(Species) %&gt;% 
-  summarise(Mean.Value = mean(Sepal.Length))
+  summarise(Mean.Value = 
+              mean(Sepal.Length))
 ```
 
 ```
@@ -318,9 +357,12 @@ class: center, middle
 
 ## `tibble` の縦長・横広変形
 
-縦長 (long-format) &lt;svg viewBox="0 0 512 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M377.941 169.941V216H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.568 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296h243.882v46.059c0 21.382 25.851 32.09 40.971 16.971l86.059-86.059c9.373-9.373 9.373-24.568 0-33.941l-86.059-86.059c-15.119-15.12-40.971-4.412-40.971 16.97z"&gt;&lt;/path&gt;&lt;/svg&gt; 横広 (wide-format) への変換は pivoting といいます。
+.content-box-green[
+
+縦長の表 (long-format table) &lt;svg viewBox="0 0 512 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M377.941 169.941V216H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.568 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296h243.882v46.059c0 21.382 25.851 32.09 40.971 16.971l86.059-86.059c9.373-9.373 9.373-24.568 0-33.941l-86.059-86.059c-15.119-15.12-40.971-4.412-40.971 16.97z"&gt;&lt;/path&gt;&lt;/svg&gt; 横広の表 (wide-format table) への変換は pivoting といいます。
 
 `pivot_longer` をつかって `iris` を横広から縦長へ変換します。
+]
 
 
 ```r
@@ -351,15 +393,17 @@ iris %&gt;% pivot_longer(cols = matches("^Sep|^Pet"))
 
 .pull-right[
 
-`matches()` は[正規表現](https://ja.wikipedia.org/wiki/%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%8F%BE) により変数（列名）を選択します。
+.content-box-green[
+
+`matches()` は[正規表現](https://ja.wikipedia.org/wiki/%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%8F%BE) により変数（列名）を選択します。`tidyverse` にはこのよう[`tidyselect`補助関数](https://tidyselect.r-lib.org/reference/language.htmlが多数存在します。
 ここでは、`Sep` または `Pet` の文字から始まる (^) 変数と一致した列名を選択します。
 
 ]
-
+]
 
 ---
 
-## `tibble` の縦長・横広変形
+## `tibble` の横広変形
 
 `pivot_wider()` は `tibble` を縦長から横広へ変換します。
 
@@ -383,13 +427,16 @@ InsectSprays %&gt;%
 ## 1 &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt; &lt;dbl [12]&gt;
 ```
 
+.content-box-red[
+
 ここでは Warning がでました。
 「観測値の区別がきない」と警告しています。
 結果は list として出力しました。
+]
 
 ---
 
-## `tibble` の縦長・横広変形
+## `tibble` の横広変形
 
 Warning は次のように解決できます。
 
@@ -418,30 +465,73 @@ InsectSprays %&gt;%
 ]
 
 .pull-right[
+.content-box-green[
+
 * `values_fn = list` を指定して、Warning を抑えました。
 * `unnest()` を使って、たたまれた　`list` 変数を開きました。
 * `everything()` を `unnest()` に渡すと、たたまれているすべての変数を開くようにします。
+]
 ]
 
 ---
 
 class: center, middle
 
-# 複数 `tibble` の結合
+# `tibble` の結合
 
 ---
 
-## 結合方法 (binding rows)
+## `tibble` の表結合動詞
+
+**Binding joins**: `x` と `y` を結合します。
+
+* **`bind_rows(x, y)`**: `x` と `y` の変数（列）名に合わせて縦に結合します。
+* **`bind_cols(x, y)`**: `x` と `y` を横に結合します。ただし行数は同じゃないといけません。
+
+**Mutating joins**: 条件付きに `x` と `y` を結合します。
+
+* **`left_join(x, y)`**: `x` の変数を `y` に追加します。
+* **`right_join(x, y)`**: `y` の変数を `x` に追加します。
+* **`inner_join(x, y)`**: `x` と `y` の条件を満たした変数だけ結合します。
+* **`full_join(x, y)`**: すべての変数を結合します。
+
+**Filtering joins**: 条件付きに `x` と `y` をフィルターします。
+
+* **`anti_join(x, y)`**: `y` と一致する `x` のすべての観測値（行）を外す
+* **`semi_join(x, y)`**: `y` と一致する `x` のすべての観測値（行）を残す
+
+
+
+
+---
+
+## Bind rows
 
 **`bind_rows(A, B)`**
 
-&lt;img src="pngs/bind_rows_eqn.png" width="362" style="display: block; margin: auto;" /&gt;
+&lt;img src="pngs/bind_rows_eqn.png" width="429" style="display: block; margin: auto;" /&gt;
 
 `bind_rows()` はデータセット `A` に データセット `B`を追加します。
 
+
+```r
+bind_rows(A, B)
+```
+
+```
+## # A tibble: 4 x 4
+##   X     Y         Z W    
+##   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1 a     t         1 &lt;NA&gt; 
+## 2 b     u         2 &lt;NA&gt; 
+## 3 j     m         8 A    
+## 4 k     n         9 B
+```
+
+
 ---
 
-## 結合方法 (binding columns)
+## Bind columns
 
 **`bind_cols(X, Y)`**
 
@@ -449,9 +539,31 @@ class: center, middle
 
 `bind_cols()` はデータセット `X` に データセット `Y` の変数を追加します。
 
+
+```r
+bind_cols(X, Y)
+```
+
+```
+## New names:
+## * A -&gt; A...1
+## * B -&gt; B...2
+## * A -&gt; A...4
+## * B -&gt; B...5
+```
+
+```
+## # A tibble: 3 x 6
+##   A...1 B...2     C A...4 B...5     D
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;int&gt;
+## 1 a     t         1 a     t         3
+## 2 b     u         2 b     u         2
+## 3 c     v         3 d     w         1
+```
+
 ---
 
-## 結合方法 (left join)
+## Left join
 
 **`left_join(X, Y)`**
 
@@ -459,9 +571,27 @@ class: center, middle
 
 `left_join()` は左のデータセット `X` を優先して `X` と `Y` の列と行を結合します。
 
+
+```r
+left_join(X, Y)
+```
+
+```
+## Joining, by = c("A", "B")
+```
+
+```
+## # A tibble: 3 x 4
+##   A     B         C     D
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt;
+## 1 a     t         1     3
+## 2 b     u         2     2
+## 3 c     v         3    NA
+```
+
 ---
 
-## 結合方法 (right)
+## Right join
 
 **`right_join(X, Y)`**
 
@@ -470,9 +600,26 @@ class: center, middle
 `right_join()` は右のデータセット `Y` を優先して `X` と `Y` の列と行を結合します。
 
 
+```r
+right_join(X, Y)
+```
+
+```
+## Joining, by = c("A", "B")
+```
+
+```
+## # A tibble: 3 x 4
+##   A     B         C     D
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt;
+## 1 a     t         1     3
+## 2 b     u         2     2
+## 3 d     w        NA     1
+```
+
 ---
 
-## 結合方法 (inner)
+## Inner join
 
 **`inner_join(X, Y)`**
 
@@ -480,9 +627,25 @@ class: center, middle
 
 `inner_join()` は `X` と `Y` で共通して存在する列だけ結合します。
 
+
+```r
+inner_join(X, Y)
+```
+
+```
+## Joining, by = c("A", "B")
+```
+
+```
+## # A tibble: 2 x 4
+##   A     B         C     D
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt;
+## 1 a     t         1     3
+## 2 b     u         2     2
+```
 ---
 
-## 結合方法 (full join)
+## Full join
 
 **`full_join(X, Y)`**
 
@@ -491,9 +654,27 @@ class: center, middle
 `full_join()` はすべての列と行を結合します。
 お互いに該当しない場合は `NA` になります。
 
+
+```r
+full_join(X, Y)
+```
+
+```
+## Joining, by = c("A", "B")
+```
+
+```
+## # A tibble: 4 x 4
+##   A     B         C     D
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt;
+## 1 a     t         1     3
+## 2 b     u         2     2
+## 3 c     v         3    NA
+## 4 d     w        NA     1
+```
 ---
 
-## 結合方法 (full join by A)
+## Full join by A
 
 **`full_join(X, Y, by = "A")`**
 
@@ -503,10 +684,24 @@ class: center, middle
 `X` と `Y` の `A` 変数を軸にして列と行を結合します。
 お互いに該当しない場合は `NA` になります。
 
+
+```r
+full_join(X, Y, by = "A")
+```
+
+```
+## # A tibble: 4 x 5
+##   A     B.x       C B.y       D
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt; &lt;int&gt;
+## 1 a     t         1 t         3
+## 2 b     u         2 u         2
+## 3 c     v         3 &lt;NA&gt;     NA
+## 4 d     &lt;NA&gt;     NA w         1
+```
 ---
 
 
-## 結合方法 (full join by C=D)
+## Full join by C=D
 
 **`full_join(X, Y, by = c("C" = "D"))`**
 
@@ -518,93 +713,164 @@ class: center, middle
 
 **`left_join()`, `right_join()`, `inner_join()` にも `by` 引数があります。**
 
+
+```r
+full_join(X, Y, by = c("C" = "D"))
+```
+
+```
+## # A tibble: 3 x 5
+##   A.x   B.x       C A.y   B.y  
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 a     t         1 d     w    
+## 2 b     u         2 b     u    
+## 3 c     v         3 a     t
+```
+
 ---
+
+
+## Anti join
+
+**`anti_join(X, Y)`**
+
+&lt;img src="pngs/anti_join_eqn.png" width="362" style="display: block; margin: auto;" /&gt;
+
+`anti_join()` は `X` と `Y` に共通する観測値（行） を `X` から外します。
+
+
+```r
+anti_join(X, Y)
+```
+
+```
+## Joining, by = c("A", "B")
+```
+
+```
+## # A tibble: 1 x 3
+##   A     B         C
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt;
+## 1 c     v         3
+```
+
+
+---
+
+## Semi join
+
+**`semi_join(X, Y)`**
+
+&lt;img src="pngs/semi_join_eqn.png" width="362" style="display: block; margin: auto;" /&gt;
+
+`semi_join()` は `X` と `Y` に共通する観測値（行） を `X` に残します。
+
+
+```r
+semi_join(X, Y)
+```
+
+```
+## Joining, by = c("A", "B")
+```
+
+```
+## # A tibble: 2 x 3
+##   A     B         C
+##   &lt;chr&gt; &lt;chr&gt; &lt;int&gt;
+## 1 a     t         1
+## 2 b     u         2
+```
+
+---
+
 
 
 class: center, middle
 
-# `ggplot2`
+#  投稿できる `ggplot2`
 
 ---
 
 
-## `ggplot2` のデフォルト
+## `ggplot2` の基本
 
 
 ```r
-*ggplot(iris) +
-  geom_boxplot(aes(x = Species, y = Petal.Length))
+*ggplot(iris, aes(x = Species, y = Petal.Length)) +
+  geom_boxplot()
 ```
 
 .pull-left[
 
-&lt;img src="index_files/figure-html/unnamed-chunk-26-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/unnamed-chunk-39-1.png" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 
-ハイライト部分で `ggplot` のベースレイヤーを定義します。
+黄色の部分は `ggplot` のベースレイヤーです。
 
-* 第 1 引数はデータ (data.frame, tibble)
-* 第 2 引数はマッピング (図に使う変数)
-* `ggplot()` に情報を渡すと、下流のプロットメソッドのデフォルトになります。
+* 第 1 引数はデータ (data.frame, tibble) です。
+* 第 2 引数はマッピング (図に使う変数) です。マッピングする変数は `aes()` 関数を使って `geom` に渡します。
+* `ggplot()` 関数に情報を渡すと、下流の　`geom` にデフォルトとして使われます。
+
 ]
 
 ---
 
-## `ggplot2` のデフォルト
+## 箱ひげ図
 
 
 ```r
-ggplot(iris) + 
-* geom_boxplot(aes(x = Species, y = Petal.Length))
+ggplot(iris, aes(x = Species, y = Petal.Length)) + 
+* geom_boxplot()
 ```
 
 .pull-left[
 
-&lt;img src="index_files/figure-html/unnamed-chunk-28-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/unnamed-chunk-41-1.png" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 
 `geom_boxplot()` は箱ひげ図の関数です。
 
-* 第 1 引数はマッピング (図に使う変数) です。マッピングは `aes()` 関数でします。
+* 第 1 引数はマッピング (図に使う変数) です。
 * 第 2 引数はデータ (data.frame, tibble) です。
 * 他の引数は `?geom_boxplot` で確認できます。
-* `geom_boxplot()` にデータやマッピングを渡せば、`ggplot()` に渡した情報を無視できます。
+* `geom_boxplot()` にデータやマッピングを渡せば、`ggplot()` に渡した情報を無視できますが、ここではデフォルトを使っています。
 ]
 
 ---
 
-## `iris` の図に軸タイトルを追加
+## 図の軸タイトル
 
 
 ```r
-ggplot(iris) + 
-  geom_boxplot(aes(x = Species, y = Petal.Length)) +
+ggplot(iris, aes(x = Species, y = Petal.Length)) + 
+  geom_boxplot() +
 * scale_x_discrete("Species") +
 * scale_y_continuous("Petal length (mm)")
 ```
 
 .pull-left[
 
-&lt;img src="index_files/figure-html/unnamed-chunk-30-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/unnamed-chunk-43-1.png" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 
-x軸が因子のとき、`scale_x_discrete()`を使います。連続変数のときは `scale_x_continuous()` です。
+x 軸は因子のとき、`scale_x_discrete()`を使います。連続変数のときは `scale_x_continuous()` です。
 
-* 第 1 引数は軸のラベルです。
-* `breaks` 引数で軸の区切りを変えられます。
-* `limits` 引数で軸の範囲を指定できます。
-* 他の引数は `?scale_x_discrete` または `scale_x_continuous` で確認できます。
+* 第 1 引数 (`name`) は軸の軸のタイトルですです。
+* `breaks` 引数で軸の区切りを決められます。
+* `limits` 引数で軸の範囲も決められます。
+* 他の引数は `?scale_x_discrete` または `?scale_x_continuous` で確認できます。
 ]
 
 ---
 
-## `iris` の図の背景を投稿用に
+## 図の背景を白に
 
 
 ```r
@@ -617,22 +883,20 @@ ggplot(iris) +
 
 .pull-left[
 
-&lt;img src="index_files/figure-html/unnamed-chunk-32-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/unnamed-chunk-45-1.png" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 
-`theme_pubr()` は `ggpubr` パッケージの関数です。これで簡単に図の見せ方を変えられます。
+`theme_pubr()` は `ggpubr` パッケージの関数です。これで簡単に図の見せ方をシンプルにできます。
+`theme()` を使えば、さらに細かい編集ができます。
 
-* 第 1 引数は軸のラベルです。
-* `breaks` 引数で軸の区切りを変えられます。
-* `limits` 引数で軸の範囲を指定できます。
-* 他の引数は `?scale_x_discrete` または `scale_x_continuous` で確認できます。
+`?theme` で詳細の確認ができます。
 ]
 
 ---
 
-## `ggplot` をファイルに保存
+## `ggplot` の出力（ファイルへ保存）
 
 
 ```r
@@ -640,21 +904,26 @@ ggsave(filename = "figure01.png", plot = figure01,
        width = 80, height = 80, dpi = 300, units = "mm")
 ```
 
+.content-box-green[
+
 .pull-left[
-* `filename`: ファイル名、ファイル形式は拡張子できまります。
+* `ggsave()` は `ggplot` を保存するための関数です。
+* `filename`: ファイル名、ファイル形式は拡張子で決められます。
 * `plot`: `ggplot`オブジェクト、デフォルトは最後に表示された図です。
 ]
 
 .pull-right[
 * `width`, `height`, `units`: 図の寸法と寸法の単位。
-* `dpi`: ラスターグラフィックの場合は解像度、ベクターグラフィックの場合は不要。注意: `dpi` の設定によって、保存したフォントの大きさが変わります。
+* `dpi`: ラスターグラフィックの場合は解像度、ベクターグラフィックの場合は不要。
+]
 ]
 
 ---
 
-## `iris` の箱ひげ図の出力
+## 箱ひげ図の出力
 
 解像度 96 と 300 の PNG ファイルを保存します。
+`ggplot` の結果は `figure01`　オブジェクトに書き込みました。
 
 
 ```r
@@ -673,10 +942,12 @@ ggsave(filename = "figure01_300.png", plot = figure01,
        width = 80, height = 80, dpi = 300, units = "mm")
 ```
 
+`base_size = 10` でフォントサイズを 10 pt にしました。デフォルトは 11 pt です。
+
 
 ---
 
-## `iris` png ファイル
+## 保存した 2種類の PNG ファイル
 
 .pull-left[
 
@@ -695,7 +966,7 @@ ggsave(filename = "figure01_300.png", plot = figure01,
 ---
 
 
-## RStudio の解像度とフォントサイズ問題
+## RStudio の解像度とフォントサイズの問題
 
 .pull-left[
 
@@ -712,20 +983,25 @@ ggsave(filename = "figure01_300.png", plot = figure01,
 
 ]
 
-**注意:** RStudio をインタラクティブに使っているときに図を保存したら、フォントサイズは解像度に合わない。図のフォントサイズは 10 解像度は 300 です。
+.content-box-red[
 
-**解決方法:** R スクリプトを `Source` (`CTRL+SHIFT+S`)  すれば、フォントサイズと解像度のスケーリング問題が消えます。
+**注意:** Linux 環境のとき、RStudio IDE をインタラクティブに使っているときに図を保存すると、フォントサイズと解像度が合わなくなります。右図のフォントサイズは 10、 解像度は 300 です。**Win10 の場合は問題ないです。OSXは未確認です。**
 
+**解決方法:** R スクリプトを `Source` (`CTRL+SHIFT+S`)  すれば、この問題が消えます。
 
+]
 ---
 
-## Publication ready figures
+##投稿用図の作図のながれ
 
-**最もシンプルな方法**
+.content-box-green[
 
-1. 図はPDFまたはSVGファイルとして保存
-2. Imagemagick、GIMP、Inkscape、Adobe Photoshop/Illustrator などのソフトで変換
+**最もシンプルな方法** 
 
+1. R の図はベクトルグラフィックとして保存する (PDF・SVG 形式)。
+2. 保存した図を Imagemagick、GIMP、Inkscape、Adobe Photoshop/Illustrator などのソフトで形式変換をおこなう。
+
+]
 
 
 ```r
@@ -735,18 +1011,57 @@ figure01 = ggplot(iris) +
   scale_y_continuous("花びらの長さ (mm)") +
   theme_pubr()
 
+# figure01 を figure01.pdf に保存
 ggsave("figure01.pdf", plot = figure01, 
        width = 80, height = 80, units = "mm", 
        device = cairo_pdf)
 ```
 
-**重要:** `ggsave()` に `device = cairo_pdf` を渡しました。`Cairo graphics library` はユニコード文字を正しくPDFに埋め込んでくれるので、好みのフォントも使えるようになります。
+.content-box-red[
+
+**重要:** `ggsave()` に `device = cairo_pdf` を渡しました。`Cairo graphics library` はユニコード文字を正しくPDFに埋め込んでくれるので、好みのフォントまたは指定されたフォントを使えるようになります。
+
+]
 
 ---
 
-## システムフォントの埋め込み
+## フォントは正しく表示されない
 
-システムフォントを R の図に使うなら、`showtext` パッケージがあるととても楽です。
+
+
+
+
+.pull-left[
+&lt;img src="web_images/figure01_mising_font01.png" width="603" style="display: block; margin: auto;" /&gt;
+
+]
+
+.pull-right[
+&lt;img src="web_images/figure01_mising_font02.png" width="603" style="display: block; margin: auto;" /&gt;
+
+]
+
+.content-box-red[
+
+図をPDFとして保存したが、フォントが消えた。
+これはPDFへのフォント埋め込みエラーです。
+**解決方法**: 埋め込みたいフォントを指定する。
+]
+
+---
+
+## フォントの埋め込み
+
+.content-box-green[
+
+R のデフォルトフォントは serif と sans ですが、好みのフォントも使えます。
+PDFファイルに保存した図の文字が消えているときも、フォントの埋め込みが必要です。
+フォントの埋め込みは、`showtext` パッケージを使います。
+
+使用可能なフォントは `font_paths()` と `font_files()` で確認できます。
+]
+
+
 
 ```r
 library(showtext)
@@ -754,10 +1069,36 @@ font_paths() # Show the system font paths
 font_files() # Show the system font files
 ```
 
+`font_add()` でフォントを R 環境に追加します。
+
 
 ```r
 font_add("notoserifcjk", regular = "NotoSerifCJKjp-Regular.otf")
-showtext_auto()
+```
+
+Google のフォントをインストールしていなくても、次の関数で使えるようになります。
+
+```r
+font_families_google() # List Google fonts
+font_add_google("Noto Serif CJK", "notoserifcjk") # Pull font from Google
+```
+
+---
+
+## システムフォントの埋め込み
+
+`ggplot` にフォントを埋め込むなら、`showtext_auto()` を作図の前に実行します。
+
+
+```r
+showtext_auto() # Once per session
+```
+
+`font_add()` で追加したフォントは `theme_pubr()` の `base_family` 引数に渡します。
+`ggsave()` に `device = cairo_pdf` を渡さないと，フォントを正しく埋め込まれていないこともあります。
+
+
+```r
 figure02 = ggplot(iris) + 
   geom_boxplot(aes(x = Species, y = Petal.Length)) +
   scale_x_discrete("種") +
@@ -772,36 +1113,63 @@ ggsave("figure02.pdf",
 
 ---
 
-## システムフォントの埋め込み
+## 完成した `figure02`
 
 &lt;img src="figure02_convert.png" width="60%" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## システムフォントの埋め込み
+## 図を整える
+
+ここで使った Noto Serif CJK のフォントにイタリック体が存在しません。
+`font_add()`　にイタリック体のためのフォントを追加します。
 
 
 ```r
-font_add("notoserif", 
+font_add("notoserifcjk", 
          regular = "NotoSerifCJKjp-Regular.otf",
-         italic = "NotoSerif-Italic.ttf")
-showtext_auto()
+*        italic = "NotoSerif-Italic.ttf")
+```
 
+次は種名をイタリック体にします。
+`iris` から `Species` の変数を抽出して、各因子を `xlabel` に入れます。
+
+
+```r
 xlabel = iris %&gt;% pull(Species) %&gt;% levels()
-xlabel = str_glue("italic('I.')~italic('{xlabel}')")
+# xlabel = levels(iris$Species) # base R
+# xlabel = unique(iris$Species) # base R
+```
 
-iris %&gt;% 
-  ggplot() + 
+イタリック体にするコードは通りです。
+数式とし定義しますが、`expression()` の必要はありません。
+
+```r
+xlabel = str_glue("italic('I.')~italic('{xlabel}')")
+# xlabel = paste0("italic('I.')~italic('", xlabel ,"')" ) # base R
+```
+
+数式の記号は `?plotmath` で確認できます。
+
+---
+
+## 点を透明にして、見やすくする
+
+`ggplot` のコードです。散布図 (`geom_point()`) を作図しました。
+
+
+```r
+ggplot(iris) + 
   geom_point(aes(x = Species, y = Petal.Length, color = Species),
-             position = position_jitter(0.1),
-             alpha = 0.8) +
+*            position = position_jitter(0.1),
+*            alpha = 0.8) +
   scale_x_discrete("種", label = parse(text = xlabel)) +
   scale_y_continuous("花びらの長さ (mm)",
                      limits = c(0, 8),
                      breaks = seq(0, 8, by = 2)) +
   scale_color_manual(label = parse(text = xlabel),
                      values = viridis::viridis(4)) +
-  theme_pubr(base_family = "notoserif") + 
+  theme_pubr(base_family = "notoserifcjk") + 
   theme(legend.title = element_blank(),
         legend.background = element_blank(),
         legend.position = c(0,1),
@@ -809,26 +1177,470 @@ iris %&gt;%
         legend.text.align = 0)
 ```
 
----
-
-## システムフォントの埋め込み
-
-&lt;img src="index_files/figure-html/unnamed-chunk-45-1.png" style="display: block; margin: auto;" /&gt;
+`position_jitter()` で点の位置を無作為にずらします。
+`alpha = 0.8` で透明度 (0 〜 1 の値) を付けています。
 
 ---
 
-## システムフォントの埋め込み
+## 点の色と軸ラベルを parse 
 
-&lt;img src="index_files/figure-html/unnamed-chunk-46-1.png" style="display: block; margin: auto;" /&gt;
+
+```r
+ggplot(iris) + 
+  geom_point(aes(x = Species, y = Petal.Length, color = Species),
+             position = position_jitter(0.1), 
+             alpha = 0.8) + 
+  scale_x_discrete("種", label = parse(text = xlabel)) +
+  scale_y_continuous("花びらの長さ (mm)",
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+* scale_color_manual(label = parse(text = xlabel),
+*                    values = viridis::viridis(4)) +
+  theme_pubr(base_family = "notoserifcjk") + 
+  theme(legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.position = c(0,1),
+        legend.justification = c(0,1),
+        legend.text.align = 0)
+```
+
+`scale_color_manual()` で点の色を指定しました。
+`xlabel`　を `parse()` に渡すと、`expression` に変換されます。
+`values = viridis::viridis(4)` で色を指定しました。
+色覚以上に配慮したパレットです。
+
 ---
 
+## 図の詳細の工夫
 
-## システムフォントの埋め込み
 
-&lt;img src="index_files/figure-html/unnamed-chunk-47-1.png" style="display: block; margin: auto;" /&gt;
+```r
+ggplot(iris) + 
+  geom_point(aes(x = Species, y = Petal.Length, color = Species),
+             position = position_jitter(0.1), 
+             alpha = 0.8) + 
+  scale_x_discrete("種", label = parse(text = xlabel)) +
+  scale_y_continuous("花びらの長さ (mm)",
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_color_manual(label = parse(text = xlabel),   
+                     values = viridis::viridis(4)) + 
+  theme_pubr(base_family = "notoserifcjk") + 
+* theme(legend.title = element_blank(),
+*       legend.background = element_blank(),
+*       legend.position = c(0,1),
+*       legend.justification = c(0,1),
+*       legend.text.align = 0)
+```
+
+`theme()` で `theme_pubr()` 凡例 (legend) の設定を操作しています。
+凡例のタイトルと背景を `element_blank()`　で外しています。
+凡例の位置は `legend.position = c(0, 1)` で固定しました。
+(0, 0) はパネル部分の左下の位置です。(1, 1) は右上です。
+`legend.justification = c(0,1)` 位置設定に対する凡例の位置を指定しています。
+この場合，凡例の (0, 1) の位置を図の (0, 1) の位置に設定します。
+`lgend.text.align = 0` は凡例内の文字列の位置です。
+0 は左揃え、1 は右揃えです。
 ---
 
+## 完成した `iris` の図
 
+保存したときに，`width = 1.5 * 80` を渡したので長方形になりました。
+
+&lt;img src="index_files/figure-html/unnamed-chunk-69-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: center, middle
+
+# `ggplot` Example 2
+
+---
+
+## `BOD` データの作図
+
+BOD は Biochemical Oxygen Demand（生物化学的酸素要求量）の諸略です。
+BOD 図の y 軸ラベルは BOD (mg O&lt;sub&gt;2&lt;/sub&gt; L&lt;sup&gt;-1&lt;/sup&gt;) にするためには、`parse()` を使います。
+
+
+```r
+font_add_google("Noto Serif", "notoserif")
+yname = "'BOD'~(mg~O[2]~L^{-1})"
+
+ggplot(BOD) + 
+  geom_point(aes(x = Time, y = demand)) +
+  scale_x_continuous("Time (days)", 
+                     limits = c(0, 7),
+                     breaks = 0:7) +
+* scale_y_continuous(name = parse(text = yname),
+                     limits = c(0, 20)) +
+  theme_pubr(base_family = "notoserif") 
+```
+
+`parse(text = yname)` で文字列を数式に変換します。
+
+
+---
+
+## 生データの図
+
+&lt;img src="index_files/figure-html/unnamed-chunk-71-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 生データに GLM をのせます
+
+**`BOD` データの一般化線形モデル**
+
+$$
+`\begin{aligned}
+y &amp;\sim N(\mu, \sigma)\\
+\mu &amp;= b_0 + b_1 x
+\end{aligned}`
+$$
+
+モデルの当てはめは `glm()` でします。
+
+
+```r
+# Fit the GLM
+m1 = glm(demand ~ Time, data = BOD, family = gaussian("identity"))
+```
+
+期待値 (expectation) と期待値の標準誤差 (standard error) を求めます。
+
+
+```r
+*expectations = BOD %&gt;% expand(Time = seq(1, 7, by = 0.5))
+expectations = expectations %&gt;% 
+  predict(m1, newdata = ., type = "response", se.fit = TRUE) %&gt;% 
+  as_tibble() %&gt;%  
+  bind_cols(expectations)
+```
+
+`expand()` は `tidyr` パッケージの関数です。`BOD` を `expand()` にわたして、期待値を求めるための `Time` 変数の範囲を
+`seq()` で作っています。
+
+---
+
+## 作図コード
+
+
+```r
+ggplot() + 
+  geom_ribbon(aes(x = Time, 
+                  ymin = fit - 1.96 * se.fit, 
+                  ymax = fit + 1.96 * se.fit),
+              alpha = 0.6,
+              data = expectations) +
+  geom_line(aes(x = Time, y = fit), 
+            data = expectations) +
+  geom_point(aes(x = Time, y = demand), 
+             data = BOD) +
+  scale_x_continuous("Time (days)", 
+                     limits = c(0, 7),
+                     breaks = 0:7) +
+  scale_y_continuous(name = parse(text = yname)) +
+  theme_pubr(base_family = "notoserif") 
+```
+
+`geom_ribbon()` で 95% の信頼区間のせます。
+`geom_line()` でモデルの期待値をのせます。
+`ggplot` はレイヤーを重ねて描くので、最後にくる`geom` は図の一番上のレイヤーです。
+
+---
+
+## 完成した図
+
+&lt;img src="index_files/figure-html/unnamed-chunk-75-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: center, middle
+# N x M の図
+
+---
+
+## Base 3x1 plot
+
+
+```r
+ggplot(iris) +
+  geom_point(aes(x = Petal.Width,
+                 y = Petal.Length,
+                 color = Species)) +
+  facet_grid(cols = vars(Species)) 
+```
+
+&lt;img src="index_files/figure-html/iris01-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## `theme_pubr()` and `facet_rep_grid()`
+
+
+```r
+ggplot(iris) +
+  geom_point(aes(x = Petal.Width,
+                 y = Petal.Length,
+                 color = Species)) +
+  facet_grid(cols = vars(Species)) 
+```
+
+&lt;img src="index_files/figure-html/iris02-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## xy 軸と背景の修正
+
+
+```r
+xlabs = iris %&gt;% pull(Species) %&gt;% levels()
+xlabs = str_glue("italic('I.')~italic('{xlabs}')")
+yname = "Petal length (mm)"
+xname = "Petal width (mm)"
+cname = "Species"
+ggplot(iris) +
+  geom_point(aes(x = Petal.Width,
+                 y = Petal.Length,
+                 color = Species)) +
+  scale_x_continuous(xname) +
+  scale_y_continuous(yname) +
+  scale_color_manual(cname,
+                     labels = parse(text = xlabs),
+                     values = viridis::viridis(4)) +
+  facet_rep_grid(cols = vars(Species)) +
+  theme_pubr(base_family = "notoserif")
+```
+
+---
+
+## xy 軸と背景の修正
+
+&lt;img src="index_files/figure-html/iris10-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 凡例とパネルラベルの修正
+
+
+```r
+ggplot(iris) +
+  geom_point(aes(x = Petal.Width,
+                 y = Petal.Length,
+                 color = Species)) +
+  scale_x_continuous(xname) +
+  scale_y_continuous(yname) +
+  scale_color_manual(cname,
+                     labels = parse(text = xlabs),
+                     values = viridis::viridis(4)) +
+  facet_rep_grid(cols = vars(Species)) +
+  theme_pubr(base_family = "notoserif") +
+  theme(legend.position = c(1,0),
+        legend.justification = c(1,0),
+        legend.background = element_blank(),
+        legend.title = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank())
+```
+
+---
+
+# 凡例とパネルラベルの修正
+
+&lt;img src="index_files/figure-html/iris11-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# 凡例の細かい修正と A,B,C を追加
+
+
+```r
+iris %&gt;% 
+  mutate(l = factor(Species, labels = c("(A)", "(B)", "(C)"))) %&gt;% 
+  ggplot() +
+  geom_point(aes(x = Petal.Width,
+                 y = Petal.Length,
+                 color = Species)) +
+  geom_text(aes(x = Inf, y = Inf, label = l),
+            family = "notoserif",
+            vjust = 1.5, hjust = 1, check_overlap = T) +
+  scale_x_continuous(xname) +
+  scale_y_continuous(yname) +
+  scale_color_manual(cname,
+                     labels = parse(text = xlabs),
+                     values = viridis::viridis(4)) +
+  facet_rep_grid(cols = vars(Species)) +
+  theme_pubr(base_family = "notoserif") +
+  theme(legend.position = c(1,0),
+        legend.justification = c(1,0),
+        legend.background = element_blank(),
+        legend.title = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        legend.key.height = unit(1.25, "char"),
+        legend.text.align = 0)
+```
+
+---
+
+# 凡例の細かい設定と A,B,C を追加
+
+&lt;img src="index_files/figure-html/iris12-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# 最終修正
+
+
+```r
+iris %&gt;% 
+  mutate(l = factor(Species, labels = c("(A)", "(B)", "(C)"))) %&gt;% 
+  ggplot() +
+  geom_point(aes(x = Petal.Width,
+                 y = Petal.Length,
+                 color = Species)) +
+  geom_text(aes(x = Inf, y = Inf, label = l),
+            family = "notoserif",
+            vjust = 1, hjust = 1, check_overlap = T) +
+  scale_x_continuous(xname, breaks = seq(0, 3, by = 1), limits = c(0, 3)) +
+  scale_y_continuous(yname, breaks = seq(0, 8, by = 2),
+                     limits = c(0, 8)) +
+  scale_color_manual(cname,
+                     labels = parse(text = xlabs),
+                     values = viridis::viridis(4)) +
+  guides(color = guide_legend(override.aes = list(size = 2))) +
+  facet_rep_grid(cols = vars(Species)) +
+  theme_pubr(base_family = "notoserif") +
+  theme(legend.position = c(1,0),
+        legend.justification = c(1,0),
+        legend.background = element_blank(),
+        legend.title = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        legend.key.height = unit(1.25, "char"),
+        legend.text.align = 0)
+```
+
+---
+
+# 最終修正
+
+&lt;img src="index_files/figure-html/iris13-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 3x2 plot with `patchwork`
+
+
+```r
+xlim = Orange %&gt;% pull(age) %&gt;% range()
+ylim = Orange %&gt;% pull(circumference) %&gt;% range()
+xname = "Age (days)"
+yname = "Circumference (mm)"
+o1 = Orange %&gt;% filter(Tree == 1) %&gt;% 
+  ggplot() + 
+  geom_point(aes(x = age, y = circumference)) +
+  scale_x_continuous(xname, 
+                     limits = range(pretty(xlim)), 
+                     breaks = c(0, 1000, 2000)) +
+  scale_y_continuous(yname, limits = range(pretty(ylim))) +
+  annotate("text", x = Inf, y = Inf, label = "(A)",
+           family = "notoserif", vjust = 1.5, hjust = 1) +
+  theme_pubr(base_family = "notoserif") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank())
+# Continued for each tree ...
+```
+
+[**`patchwork` パッケージによる図の結合**](https://patchwork.data-imaginist.com/index.html)
+
+
+```r
+o1 + o2 + o3 + o4 + o5 + 
+  plot_layout(ncol = 3, nrow = 2) &amp;
+  theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+
+---
+
+## 3x2 plot with `patchwork`
+
+[**`patchwork` パッケージによる図の結合**](https://patchwork.data-imaginist.com/index.html)
+
+
+```r
+*o1 + o2 + o3 + o4 + o5 +
+  plot_layout(ncol = 3, nrow = 2) &amp; 
+  theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+`+`、`|`、`/` などの演算子で図を組み立てます。
+
+
+```r
+o1 + o2 + o3 + o4 + o5 + 
+* plot_layout(ncol = 3, nrow = 2) &amp;
+  theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+ここでは `plot_layer()` を使って図のレイアウトを来ましたが、他の方法もあります。
+行末の `&amp;` も `patchwork` の演算子です。
+
+
+```r
+o1 + o2 + o3 + o4 + o5 + 
+  plot_layout(ncol = 3, nrow = 2) &amp; 
+* theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+2行目の行末の `&amp;` の次にくる関数は `theme()` です。
+`&amp;` でつなぐことによって、`theme()` `&amp;` の上流にある図に適応せれます。
+
+
+
+---
+
+## 3x2 plot with `patchwork`
+
+
+```r
+o1 + o2 + o3 + o4 + o5 + 
+  plot_layout(ncol = 3, nrow = 2) &amp; 
+  theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-82-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 3x2 plot + `plot_spacer()` 
+
+
+```r
+o1 + o2b + o3b + o4 + plot_spacer() + o5 + 
+  plot_layout(ncol = 3, nrow = 2) &amp; 
+  theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-83-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## 上3x下2 の 図
+
+
+```r
+(o1 + o2 + o3b) /  (o4 + o5) + 
+  theme(plot.background = element_rect(fill = NA, color = NA))
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-84-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
 
 ## Convert with ImageMagick
 
@@ -841,14 +1653,40 @@ iris %&gt;%
 library(magick)
 img = image_read_pdf("figure01.pdf", density = 600)
 img %&gt;% image_write("figure01_convert.tif",
-              density = 300,
-              format = "tif",
-              flatten = TRUE,
-              depth = 8,
-              compression = "lzw")
+                    density = 300,
+                    format = "tif",
+                    flatten = TRUE,
+                    depth = 8,
+                    compression = "lzw")
 ```
 
---- 
+---
+
+
+### Consultations / collaborations / questions regarding R
+
+**連絡先**
+
+* &lt;svg viewBox="0 0 512 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M464 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm0 48v40.805c-22.422 18.259-58.168 46.651-134.587 106.49-16.841 13.247-50.201 45.072-73.413 44.701-23.208.375-56.579-31.459-73.413-44.701C106.18 199.465 70.425 171.067 48 152.805V112h416zM48 400V214.398c22.914 18.251 55.409 43.862 104.938 82.646 21.857 17.205 60.134 55.186 103.062 54.955 42.717.231 80.509-37.199 103.053-54.947 49.528-38.783 82.032-64.401 104.947-82.653V400H48z"&gt;&lt;/path&gt;&lt;/svg&gt;: &lt;gnishihara@gmail.com&gt;, &lt;greg@nagasaki-u.ac.jp&gt;
+* &lt;svg viewBox="0 0 512 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"&gt;&lt;/path&gt;&lt;/svg&gt;: [@nagasakiprof](https://twitter.com/nagasakiprof)
+* &lt;svg viewBox="0 0 24 24" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M0 0h24v24H0z" fill="none"&gt;&lt;/path&gt;  &lt;path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"&gt;&lt;/path&gt;&lt;/svg&gt;: [www.nagaremo.jp](https://nagaremo.jp)
+* &lt;svg viewBox="0 0 496 512" style="height:1em;fill:currentColor;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"&gt;&lt;/path&gt;&lt;/svg&gt;: [github.com/gnishihara](https://github.com/gnishihara)
+
+**Gregory N. Nishihara**
+
+.pull-left[
+* Organization for Marine Science and Technology
+* Institute for East China Sea Research
+* Graduate School of Fisheres and Environmental Sciences
+* Nagasaki University
+]
+
+.pull-right[
+* 長崎大学
+* 海洋未来イノベーション機構
+* 環東シナ海環境資源研究センター
+* 水産・環境科学総合研究科
+]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
