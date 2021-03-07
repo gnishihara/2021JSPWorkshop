@@ -130,7 +130,6 @@ convert -size ${SIZE}x${SIZE} -pointsize  50  \
 convert -size ${SIZE}x${SIZE} -pointsize  50  \
   -font ${FONT} \
   \( -fill white  -gravity center -background grey25    label:A -background grey25    label:B -background grey25 label:C -gravity none -background white -splice 5x0+0+0  +append \) \
-  \( -fill grey25 -gravity center -background grey75    label:a -background grey75    label:t -background grey75 label:1 -gravity none -background white -splice 5x0+0+0  +append \) \
   \( -fill grey25 -gravity center -background grey75    label:c -background grey75    label:v -background grey75 label:3 -gravity none -background white -splice 5x0+0+0  +append \) \
   -gravity none -background white -splice 0x5+0+0 -append -chop 5x5+0+0 pngs/anti_join.png
 
