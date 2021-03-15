@@ -1657,3 +1657,9 @@ img %>% image_write("figure01_convert.tif",
 * 環東シナ海環境資源研究センター
 * 水産・環境科学総合研究科
 ]
+
+.content-box-green[
+スライドのコードは Github にあります。
+
+URL: <https://github.com/gnishihara/2021JSPWorkshop>
+]
