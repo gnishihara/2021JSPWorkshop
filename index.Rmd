@@ -1637,12 +1637,12 @@ img %>% image_write("figure01_convert.tif",
 
 **連絡先**
 
+* **Gregory N. Nishihara**
 * `r icons::fontawesome("envelope")`: <gnishihara@gmail.com>, <greg@nagasaki-u.ac.jp>
 * `r icons::fontawesome("twitter")`: [@nagasakiprof](https://twitter.com/nagasakiprof)
 * `r icons::google_material("launch")`: [www.nagaremo.jp](https://nagaremo.jp)
 * `r icons::fontawesome("github")`: [github.com/gnishihara](https://github.com/gnishihara)
 
-**Gregory N. Nishihara**
 
 .pull-left[
 * Organization for Marine Science and Technology
@@ -1656,4 +1656,7 @@ img %>% image_write("figure01_convert.tif",
 * 海洋未来イノベーション機構
 * 環東シナ海環境資源研究センター
 * 水産・環境科学総合研究科
+]
+.content-box-green[
+スライドのコードは Github にあります。 <https://github.com/gnishihara/2021JSPWorkshop>
 ]
