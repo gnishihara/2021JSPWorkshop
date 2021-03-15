@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 ## 中級コース
 ### Gregory N. Nishihara
 ### Nagasaki University
-### 2021/03/15 (updated: 2021-03-07)
+### 2021/03/15 (updated: 2021-03-15)
 
 ---
 
@@ -214,6 +214,8 @@ Google のスタイルガイドは `&lt;-` を使っています。
 
 ## `tidyverse` のよく使う関数
 
+.content-box-green[
+
 `tidyverse` でのデータ操作は `dplyr` にある 5 つの基礎的な関数 (動詞) を使います。
 
 * **`mutate()`**: 新しい変数 (列) を追加する。
@@ -221,31 +223,33 @@ Google のスタイルガイドは `&lt;-` を使っています。
 * **`filter()`**: フィルターをかける。
 * **`summarise()`**: 集計する（ベース R の `summary()` と区別しましょう）。
 * **`arrange()`**: 行の順序をかえる。
+]
 
 .pull-left[
 
+.content-box-green[
+
 **データ読み込みの関数**
 
-
-
-* **`read_csv()`**: CSVファイルをよむ（ベース R の `read.csv()` より使い勝手がいいです）。
-(`readr`パッケージ )
-* **`read_rds()`**: RオブジェクトをRDSファイルから読み込む。 (`readr` パッケージ)
-* **`read_xlsx()`**: XLSXファイルをよむ。(`readxl` パッケージ)
+* **`read_csv()`**: CSVファイルをよむ
+* **`read_rds()`**: RオブジェクトをRDSファイルから読み込む
+* **`read_xlsx()`**: Excel のファイルをよむ
+]
 
 ]
 
 .pull-right[
-
+.content-box-green[
 **データ書き込むの関数**
 
-* **`write_csv()`**: tibble をCSVファイルに書き込む。(`readr` パッケージ)
-* **`write_rds()`**: RオブジェクトをRDSファイルに書き込む。 (`readr` パッケージ)
+* **`write_csv()`**: CSVファイルに保存する
+* **`write_rds()`**: RオブジェクトをRDSファイルに保存する
 
-**日時操作の関数**
+]
+]
 
-* **`parse_datetime()`**: 日時データの定義につかう。(`lubridate` パッケージ)
-
+.content-box-blue[
+**`ymd_hms()`や`parse_datetime()`など**: 日時データの処理 (`lubridate`パッケージ)
 ]
 
 ---
@@ -338,15 +342,16 @@ iris %&gt;% group_by(Species) %&gt;%
 ```
 ## # A tibble: 3 x 2
 ##   Species    Mean.Value
-## * &lt;fct&gt;           &lt;dbl&gt;
+##   &lt;fct&gt;           &lt;dbl&gt;
 ## 1 setosa           5.01
 ## 2 versicolor       5.94
 ## 3 virginica        6.59
 ```
-
-ベース R のデータフレームを `tibble` に変換せずに、`tidyverse` の関数は使えます。
 ]
 
+.content-box-green[
+ベース R のデータフレームを `tibble` に変換しなくても、`tidyverse` の関数は使えます。
+]
 ---
 
 class: center, middle
@@ -483,10 +488,15 @@ class: center, middle
 
 ## `tibble` の表結合動詞
 
+.content-box-green[
+
 **Binding joins**: `x` と `y` を結合します。
 
 * **`bind_rows(x, y)`**: `x` と `y` の変数（列）名に合わせて縦に結合します。
 * **`bind_cols(x, y)`**: `x` と `y` を横に結合します。ただし行数は同じゃないといけません。
+
+]
+.content-box-blue[
 
 **Mutating joins**: 条件付きに `x` と `y` を結合します。
 
@@ -494,11 +504,15 @@ class: center, middle
 * **`right_join(x, y)`**: `y` の変数を `x` に追加します。
 * **`inner_join(x, y)`**: `x` と `y` の条件を満たした変数だけ結合します。
 * **`full_join(x, y)`**: すべての変数を結合します。
+]
+
+.content-box-orange[
 
 **Filtering joins**: 条件付きに `x` と `y` をフィルターします。
 
 * **`anti_join(x, y)`**: `y` と一致する `x` のすべての観測値（行）を外す
 * **`semi_join(x, y)`**: `y` と一致する `x` のすべての観測値（行）を残す
+]
 
 
 
@@ -972,14 +986,14 @@ ggsave(filename = "figure01_300.png", plot = figure01,
 
 **インタラクティブ (interactive) でないとき**
 
-&lt;img src="figure01_300.png" width="302" style="display: block; margin: auto;" /&gt;
+&lt;img src="figure01_300.png" width="60%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 
 **インタラクティブであるとき**
 
-&lt;img src="figure01_300_interactive.png" width="302" style="display: block; margin: auto;" /&gt;
+&lt;img src="figure01_300_interactive.png" width="60%" style="display: block; margin: auto;" /&gt;
 
 ]
 
@@ -1233,19 +1247,21 @@ ggplot(iris) +
 *       legend.text.align = 0)
 ```
 
-`theme()` で `theme_pubr()` 凡例 (legend) の設定を操作しています。
-凡例のタイトルと背景を `element_blank()`　で外しています。
+`theme()` で `theme_pubr()` 凡例 (legend) の設定を変えました。
+凡例のタイトルと背景を `element_blank()`　で外しました。
 凡例の位置は `legend.position = c(0, 1)` で固定しました。
-(0, 0) はパネル部分の左下の位置です。(1, 1) は右上です。
-`legend.justification = c(0,1)` 位置設定に対する凡例の位置を指定しています。
-この場合，凡例の (0, 1) の位置を図の (0, 1) の位置に設定します。
-`lgend.text.align = 0` は凡例内の文字列の位置です。
-0 は左揃え、1 は右揃えです。
+`(0, 0)` はパネルの左下の位置です。`(1, 1)` は右上です。
+`legend.justification = c(0,1)` は `legend.position` に対する凡例の位置を指定しました。
+この場合、凡例の `(0, 1)` の位置を図の `(0, 1)` の位置に設定しました。
+`legend.text.align = 0` で凡例内の文字列を揃えました。
+`0` は左揃え、`1` は右揃えです。
 ---
 
 ## 完成した `iris` の図
 
+.content-box-green[
 保存したときに，`width = 1.5 * 80` を渡したので長方形になりました。
+]
 
 &lt;img src="index_files/figure-html/unnamed-chunk-69-1.png" width="80%" style="display: block; margin: auto;" /&gt;
 
@@ -1259,8 +1275,10 @@ class: center, middle
 
 ## `BOD` データの作図
 
+.content-box-green[
 BOD は Biochemical Oxygen Demand（生物化学的酸素要求量）の諸略です。
 BOD 図の y 軸ラベルは BOD (mg O&lt;sub&gt;2&lt;/sub&gt; L&lt;sup&gt;-1&lt;/sup&gt;) にするためには、`parse()` を使います。
+]
 
 
 ```r
@@ -1318,8 +1336,10 @@ expectations = expectations %&gt;%
   bind_cols(expectations)
 ```
 
+.content-box-green[
 `expand()` は `tidyr` パッケージの関数です。`BOD` を `expand()` にわたして、期待値を求めるための `Time` 変数の範囲を
 `seq()` で作っています。
+]
 
 ---
 
@@ -1344,9 +1364,11 @@ ggplot() +
   theme_pubr(base_family = "notoserif") 
 ```
 
+.content-box-green[
 `geom_ribbon()` で 95% の信頼区間のせます。
 `geom_line()` でモデルの期待値をのせます。
 `ggplot` はレイヤーを重ねて描くので、最後にくる`geom` は図の一番上のレイヤーです。
+]
 
 ---
 
