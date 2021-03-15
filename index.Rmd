@@ -1659,4 +1659,5 @@ img %>% image_write("figure01_convert.tif",
 ]
 .content-box-green[
 スライドのコードは Github にあります。 <https://github.com/gnishihara/2021JSPWorkshop>
+
 ]
