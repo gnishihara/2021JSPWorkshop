@@ -6,7 +6,9 @@
 
 [2021JSPWorkshop](https://gnishihara.github.io/2021JSPWorkshop/#1)
 
-**まだ作成中です。**
+**演習データ**
+
+[Dropbox/2021JPSWORKSHOP_Example_Data](https://www.dropbox.com/sh/f1zr1u5tlpfsfbr/AAAvz_oF2kWWCugNKl_2oVKNa?dl=0)
 
 ---------------
 
