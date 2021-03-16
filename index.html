@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 ## 中級コース
 ### Gregory N. Nishihara
 ### Nagasaki University
-### 2021/03/15 (updated: 2021-03-15)
+### 2021/03/15 (updated: 2021-03-16)
 
 ---
 
@@ -1094,7 +1094,7 @@ Google のフォントをインストールしていなくても、次の関数�
 
 ```r
 font_families_google() # List Google fonts
-font_add_google("Noto Serif CJK", "notoserifcjk") # Pull font from Google
+font_add_google("Noto Serif JP", "notoserifcjk") # Pull font from Google
 ```
 
 ---
@@ -1684,6 +1684,212 @@ img %&gt;% image_write("figure01_convert.tif",
 
 ---
 
+class: middle, center
+
+# 地図の作り方
+
+---ｎ
+
+
+## 地図データ
+
+.content-box-blue[
+
+Rに使える地図データは GADM または 国土地理院からダウンロードできます。
+
+**国土地理院**
+
+* [国土地理院](https://www.gsi.go.jp/kankyochiri/gm_jpn.html)
+* [利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)
+* Global Map Japan: &lt;https://www.gsi.go.jp/kankyochiri/gm_japan_e.html&gt;
+* Must cite: Geospatial Information Authority of Japan URL: &lt;https://www.gsi.go.jp/kankyochiri/gm_japan_e.html&gt;
+
+**GADM** 
+
+* URL: &lt;https://gadm.org/&gt;
+]
+---
+
+
+## 日本地図、３種類のデータ
+
+.content-box-blue[
+
+**GADM** Database of Global Administrative Areas
+
+* URL: &lt;https://gadm.org/&gt;
+* Shapefile: &lt;https://biogeo.ucdavis.edu/data/gadm3.6/Rsf/gadm36_JPN_2_sf.rds&gt;
+* License: [Freely available for academic / non-commercial use](https://gadm.org/license.html)
+]
+
+.content-box-green[
+
+**GSI** Geospatial Information Authority of Japan
+
+* URL: &lt;https://www.gsi.go.jp/kankyochiri/gm_jpn.html&gt; 
+* Shapefile: &lt;https://fgd.gsi.go.jp/download/menu.php&gt; 
+* 解像度の低いデータをダウンロードする場合は、登録が不要です。解像度の高いデータは登録が必要です。
+* License: [Cite source when used](httpshttps://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)
+]
+
+
+---
+
+## 地図を作るためのパッケージ
+
+**ダウンロードしたデータから地図をつくるときに便利なパッケージ**
+
+* `sf`
+* `rgdal`
+* `fgdr`
+
+
+
+```r
+library(sf)
+library(rgdal)
+library(fgdr)
+```
+
+---
+
+## GADM データの処理
+
+地図をアップロードできないので、共有はしていません。
+参考のためにファイルパスを残しました。
+
+**GADM** の `RDS` ファイルをダウンロードしたら、次のよう読み込みました。
+
+
+```r
+gadm = read_rds("~/Lab_Data/Japan_map_data/gadm36_JPN_2_sf.rds")
+```
+
+長崎だけのデータを抽出します。
+
+
+```r
+gadm = gadm %&gt;% filter(str_detect(NL_NAME_1, "長崎県"))
+```
+
+---
+
+## 国土地理院のデータ処理
+
+国土地理院のデータ処理は GADM ほどシンプルではありません。
+
+解像度の低いデータ処理
+
+```r
+gsi_low = st_read("~/Lab_Data/Japan_map_data/GSI/coastl_jpn.shp")
+```
+
+```
+## Reading layer `coastl_jpn' from data source `/home/Lab_Data/Japan_map_data/GSI/coastl_jpn.shp' using driver `ESRI Shapefile'
+## Simple feature collection with 1204 features and 4 fields
+## geometry type:  LINESTRING
+## dimension:      XY
+## bbox:           xmin: 122.9335 ymin: 20.42274 xmax: 153.9869 ymax: 45.55733
+## geographic CRS: ITRF94
+```
+
+解像度の高いデータ処理は量によって時間がかかります。
+必要な地域だけ処理してください。
+
+
+```r
+gsi_high = dir("~/Lab_Data/Japan_map_data/FG/",  full = TRUE)
+gsi_high = str_subset(gsi_high, "AdmArea")
+try_read_fgd = possibly(read_fgd, NULL)　
+out = tibble(fname = gsi_high) %&gt;% mutate(data = map(fname, try_read_fgd))
+gsi_high = out %&gt;% pull(data) %&gt;% bind_rows()
+```
+
+`possibly()` と `map()` の説明は今後追加します。
+
+---
+
+## 緯度経度の範囲を指定する
+
+
+```r
+longA = 128.95
+longB = 129.32
+latA = 32.77
+latB = 33.27
+```
+
+---
+
+## 3種類の図
+
+3種類のデータを使って作図しました。
+
+
+```r
+p1 = ggplot(gadm) +
+  geom_sf() +
+  scale_y_continuous(breaks = c(latA, latB)) +
+  scale_x_continuous(breaks = c(longA, longB)) +
+  coord_sf(xlim = c(longA, longB), ylim = c(latA, latB)) +
+  ggtitle("GADM") +
+  theme_pubr(border = T)
+p2 = ggplot(gsi_low %&gt;% st_polygonize()) +
+  geom_sf() + 
+  scale_y_continuous(breaks = c(latA, latB)) +
+  scale_x_continuous(breaks = c(longA, longB)) +
+  coord_sf(xlim = c(longA, longB), ylim = c(latA, latB)) +
+  ggtitle("GSI low res") +
+  theme_pubr(border = T)
+p3 = ggplot(st_union(gsi_high)) +
+  geom_sf() + 
+  scale_y_continuous(breaks = c(latA, latB)) +
+  scale_x_continuous(breaks = c(longA, longB)) +
+  coord_sf(xlim = c(longA, longB), ylim = c(latA, latB)) +
+  ggtitle("GSI high res") +
+  theme_pubr(border = T)
+```
+
+---
+
+## Results
+
+&lt;img src="index_files/figure-html/unnamed-chunk-92-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 調査地点入りの地図
+
+
+```r
+library(ggrepel) # Provides geom_label_repel() 
+stations = tibble(station = c("A", "B", "C"),
+                  lat = c(32.98831897422387, 32.986078157438676,  32.98490823048974),
+                  lon = c(129.1180415411198,129.1188676615068,129.12139966683128))
+gsi_high = gsi_high %&gt;% filter(str_detect(gml_id, "492930|492931")) %&gt;% st_union()
+ggplot(gsi_high) +
+  geom_sf() +
+  geom_label_repel(aes(x = lon, y = lat, label = station), data = stations, family = "notoserifcjk", force_pull = 0.1, 
+                            nudge_x = c(0.002, -0.002, 0.002), nudge_y = c(0.002, -0.002, -0.002)) +
+  geom_point(aes(x = lon, y = lat, color = station), data = stations) +
+  scale_y_continuous(breaks = c(latA, latB)) +
+  scale_x_continuous(breaks = c(longA, longB)) +
+  scale_color_manual(values = viridis::viridis(4)) +
+  guides(color = F) + 
+  coord_sf(xlim = c(129.11, 129.13), ylim = c(32.982,32.995)) +
+  ggtitle("長崎県有川湾") +
+  theme_pubr(base_family = "notoserifcjk", border = TRUE)  +
+  theme(axis.title = element_blank())
+```
+
+---
+
+## 調査地点入りの地図
+
+&lt;img src="index_files/figure-html/unnamed-chunk-94-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
 
 ### Consultations / collaborations / questions regarding R
 
@@ -1713,6 +1919,7 @@ img %&gt;% image_write("figure01_convert.tif",
 スライドのコードは Github にあります。 &lt;https://github.com/gnishihara/2021JSPWorkshop&gt;
 
 ]
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
